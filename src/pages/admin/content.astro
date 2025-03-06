@@ -1,0 +1,492 @@
+---
+import Layout from '../../layouts/AdminLayout.astro';
+import { contentManagement, authManagement } from '../../lib/supabaseAdmin';
+
+// Check if user is admin
+const isAdmin = await authManagement.isAdmin();
+if (!isAdmin) {
+  return Astro.redirect('/admin/login');
+}
+
+// Get content sections
+const sections = [
+  { id: 'home', name: 'Página Inicial' },
+  { id: 'nos-metiers', name: 'Nosso Ofício' },
+  { id: 'nos-chantiers', name: 'Nossos Projetos' },
+  { id: 'nos-partenaires', name: 'Nossos Parceiros' },
+  { id: 'temoignages', name: 'Testemunhos' },
+  { id: 'contact', name: 'Contacto' }
+];
+
+// Get content for the first section by default
+let activeSection = 'home';
+let contentItems = [];
+
+try {
+  contentItems = await contentManagement.getTextContent(activeSection);
+} catch (error) {
+  console.error('Error fetching content:', error);
+}
+---
+
+<Layout title="Gestão de Conteúdo">
+  <div class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold">Gestão de Conteúdo</h1>
+            <p class="text-gray-600 mt-2">Gerencie o conteúdo textual do site</p>
+          </div>
+          <div class="flex gap-4">
+            <a 
+              href="/admin"
+              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-primary hover:text-primary transition-colors"
+            >
+              Voltar
+            </a>
+            <button 
+              id="add-content-btn"
+              class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+            >
+              Adicionar Conteúdo
+            </button>
+          </div>
+        </div>
+
+        <!-- Content Management Interface -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- Sections Sidebar -->
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4">Seções</h2>
+            <nav class="space-y-2">
+              {sections.map((section) => (
+                <button 
+                  class={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                    section.id === activeSection 
+                      ? 'bg-primary text-white' 
+                      : 'hover:bg-gray-100'
+                  }`}
+                  data-section={section.id}
+                >
+                  {section.name}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          <!-- Content List -->
+          <div class="md:col-span-3 bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6">
+              <h2 id="section-title" class="text-2xl font-bold mb-6">Página Inicial</h2>
+              
+              <div id="content-list" class="space-y-4">
+                {contentItems.length > 0 ? (
+                  contentItems.map((item) => (
+                    <div class="border rounded-lg p-4 hover:border-primary transition-colors">
+                      <div class="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 class="font-semibold text-lg">{item.key}</h3>
+                          <p class="text-gray-500 text-sm">{item.description || 'Sem descrição'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                          <button 
+                            class="edit-content-btn p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            data-content-id={item.id}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button 
+                            class="delete-content-btn p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            data-content-id={item.id}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="bg-gray-50 p-3 rounded">
+                        <p class="whitespace-pre-wrap">{item.value}</p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div class="text-center py-8">
+                    <p class="text-gray-500">Nenhum conteúdo encontrado para esta seção. Clique em "Adicionar Conteúdo" para criar.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para adicionar/editar conteúdo -->
+  <div id="content-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full mx-4">
+      <h2 id="modal-title" class="text-2xl font-bold mb-6">Adicionar Conteúdo</h2>
+      
+      <form id="content-form" class="space-y-6">
+        <input type="hidden" id="content-id" />
+        <input type="hidden" id="content-section" />
+        
+        <div>
+          <label for="content-key" class="block text-sm font-medium text-gray-700 mb-1">
+            Chave
+          </label>
+          <input
+            type="text"
+            id="content-key"
+            required
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+            placeholder="Ex: hero_title"
+          />
+        </div>
+
+        <div>
+          <label for="content-description" class="block text-sm font-medium text-gray-700 mb-1">
+            Descrição
+          </label>
+          <input
+            type="text"
+            id="content-description"
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+            placeholder="Ex: Título principal da página inicial"
+          />
+        </div>
+
+        <div>
+          <label for="content-value" class="block text-sm font-medium text-gray-700 mb-1">
+            Valor
+          </label>
+          <textarea
+            id="content-value"
+            required
+            rows="5"
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+            placeholder="Conteúdo do texto"
+          ></textarea>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="button"
+            id="cancel-btn"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            id="save-btn"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+          >
+            Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de confirmação para exclusão -->
+  <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+      <h2 class="text-2xl font-bold mb-4">Confirmar Exclusão</h2>
+      <p class="mb-6">Tem certeza que deseja excluir este conteúdo? Esta ação não pode ser desfeita.</p>
+      
+      <div class="flex justify-end gap-4">
+        <button
+          id="cancel-delete-btn"
+          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          id="confirm-delete-btn"
+          class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        >
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { contentManagement } from '../../lib/supabaseAdmin';
+  
+  // Elements
+  const sectionButtons = document.querySelectorAll('[data-section]');
+  const sectionTitle = document.getElementById('section-title');
+  const contentList = document.getElementById('content-list');
+  const addContentBtn = document.getElementById('add-content-btn');
+  
+  // Modal elements
+  const contentModal = document.getElementById('content-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const contentForm = document.getElementById('content-form');
+  const contentId = document.getElementById('content-id');
+  const contentSection = document.getElementById('content-section');
+  const contentKey = document.getElementById('content-key');
+  const contentDescription = document.getElementById('content-description');
+  const contentValue = document.getElementById('content-value');
+  const cancelBtn = document.getElementById('cancel-btn');
+  
+  // Confirmation modal elements
+  const confirmModal = document.getElementById('confirm-modal');
+  const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  
+  let activeSection = 'home';
+  let contentToDelete = null;
+  
+  // Load content for a section
+  async function loadContent(section) {
+    try {
+      activeSection = section;
+      
+      // Update section title
+      const sectionButton = document.querySelector(`[data-section="${section}"]`);
+      if (sectionTitle && sectionButton) {
+        sectionTitle.textContent = sectionButton.textContent.trim();
+      }
+      
+      // Update active button
+      sectionButtons.forEach(btn => {
+        if (btn.getAttribute('data-section') === section) {
+          btn.classList.add('bg-primary', 'text-white');
+          btn.classList.remove('hover:bg-gray-100');
+        } else {
+          btn.classList.remove('bg-primary', 'text-white');
+          btn.classList.add('hover:bg-gray-100');
+        }
+      });
+      
+      // Fetch content
+      const content = await contentManagement.getTextContent(section);
+      
+      // Render content
+      if (contentList) {
+        if (content.length > 0) {
+          contentList.innerHTML = content.map(item => `
+            <div class="border rounded-lg p-4 hover:border-primary transition-colors">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="font-semibold text-lg">${item.key}</h3>
+                  <p class="text-gray-500 text-sm">${item.description || 'Sem descrição'}</p>
+                </div>
+                <div class="flex gap-2">
+                  <button 
+                    class="edit-content-btn p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    data-content-id="${item.id}"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <button 
+                    class="delete-content-btn p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    data-content-id="${item.id}"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="bg-gray-50 p-3 rounded">
+                <p class="whitespace-pre-wrap">${item.value}</p>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          contentList.innerHTML = `
+            <div class="text-center py-8">
+              <p class="text-gray-500">Nenhum conteúdo encontrado para esta seção. Clique em "Adicionar Conteúdo" para criar.</p>
+            </div>
+          `;
+        }
+        
+        // Add event listeners to edit and delete buttons
+        document.querySelectorAll('.edit-content-btn').forEach(btn => {
+          btn.addEventListener('click', handleEditContent);
+        });
+        
+        document.querySelectorAll('.delete-content-btn').forEach(btn => {
+          btn.addEventListener('click', handleDeleteContent);
+        });
+      }
+    } catch (error) {
+      console.error('Error loading content:', error);
+      alert('Erro ao carregar conteúdo. Por favor, tente novamente.');
+    }
+  }
+  
+  // Handle section button clicks
+  sectionButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.getAttribute('data-section');
+      if (section) {
+        loadContent(section);
+      }
+    });
+  });
+  
+  // Handle add content button
+  addContentBtn?.addEventListener('click', () => {
+    // Reset form
+    contentForm?.reset();
+    contentId.value = '';
+    contentSection.value = activeSection;
+    
+    // Update modal title
+    modalTitle.textContent = 'Adicionar Conteúdo';
+    
+    // Show modal
+    contentModal?.classList.remove('hidden');
+    contentModal?.classList.add('flex');
+  });
+  
+  // Handle edit content button
+  async function handleEditContent(e) {
+    const id = e.currentTarget.getAttribute('data-content-id');
+    
+    try {
+      // Get content from the DOM
+      const contentElement = e.currentTarget.closest('.border');
+      const keyElement = contentElement.querySelector('h3');
+      const descriptionElement = contentElement.querySelector('p.text-gray-500');
+      const valueElement = contentElement.querySelector('p.whitespace-pre-wrap');
+      
+      // Update form
+      contentId.value = id;
+      contentSection.value = activeSection;
+      contentKey.value = keyElement.textContent.trim();
+      contentDescription.value = descriptionElement.textContent === 'Sem descrição' ? '' : descriptionElement.textContent.trim();
+      contentValue.value = valueElement.textContent.trim();
+      
+      // Update modal title
+      modalTitle.textContent = 'Editar Conteúdo';
+      
+      // Show modal
+      contentModal?.classList.remove('hidden');
+      contentModal?.classList.add('flex');
+    } catch (error) {
+      console.error('Error editing content:', error);
+      alert('Erro ao editar conteúdo. Por favor, tente novamente.');
+    }
+  }
+  
+  // Handle delete content button
+  function handleDeleteContent(e) {
+    const id = e.currentTarget.getAttribute('data-content-id');
+    contentToDelete = id;
+    
+    // Show confirmation modal
+    confirmModal?.classList.remove('hidden');
+    confirmModal?.classList.add('flex');
+  }
+  
+  // Handle form submission
+  contentForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = contentId.value;
+    const section = contentSection.value;
+    const key = contentKey.value;
+    const description = contentDescription.value;
+    const value = contentValue.value;
+    
+    try {
+      if (id) {
+        // Update existing content
+        await contentManagement.updateTextContent(id, {
+          key,
+          description,
+          value
+        });
+        
+        // Log activity
+        await contentManagement.logActivity('update_content', {
+          section,
+          key,
+          id
+        });
+      } else {
+        // Create new content
+        await contentManagement.createTextContent({
+          section,
+          key,
+          description,
+          value
+        });
+        
+        // Log activity
+        await contentManagement.logActivity('create_content', {
+          section,
+          key
+        });
+      }
+      
+      // Close modal
+      contentModal?.classList.add('hidden');
+      contentModal?.classList.remove('flex');
+      
+      // Reload content
+      await loadContent(section);
+    } catch (error) {
+      console.error('Error saving content:', error);
+      alert('Erro ao salvar conteúdo. Por favor, tente novamente.');
+    }
+  });
+  
+  // Handle cancel button
+  cancelBtn?.addEventListener('click', () => {
+    contentModal?.classList.add('hidden');
+    contentModal?.classList.remove('flex');
+  });
+  
+  // Handle cancel delete button
+  cancelDeleteBtn?.addEventListener('click', () => {
+    confirmModal?.classList.add('hidden');
+    confirmModal?.classList.remove('flex');
+    contentToDelete = null;
+  });
+  
+  // Handle confirm delete button
+  confirmDeleteBtn?.addEventListener('click', async () => {
+    if (!contentToDelete) return;
+    
+    try {
+      await contentManagement.deleteTextContent(contentToDelete);
+      
+      // Log activity
+      await contentManagement.logActivity('delete_content', {
+        id: contentToDelete
+      });
+      
+      // Close modal
+      confirmModal?.classList.add('hidden');
+      confirmModal?.classList.remove('flex');
+      
+      // Reload content
+      await loadContent(activeSection);
+      
+      contentToDelete = null;
+    } catch (error) {
+      console.error('Error deleting content:', error);
+      alert('Erro ao excluir conteúdo. Por favor, tente novamente.');
+    }
+  });
+  
+  // Load initial content
+  document.addEventListener('DOMContentLoaded', () => {
+    loadContent(activeSection);
+  });
+</script>

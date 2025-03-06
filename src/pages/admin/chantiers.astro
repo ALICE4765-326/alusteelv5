@@ -1,0 +1,811 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// Check authentication on page load
+let isAuthenticated = false;
+const sessionStr = Astro.cookies.get('alusteel_session')?.value;
+
+if (sessionStr) {
+  try {
+    const session = JSON.parse(sessionStr);
+    if (session && session.user) {
+      isAuthenticated = true;
+    }
+  } catch (e) {
+    // Invalid session
+  }
+}
+
+// Redirect if not authenticated
+if (!isAuthenticated) {
+  return Astro.redirect('/admin/login');
+}
+
+// Simulation de données locales
+const projects = [
+  {
+    id: 1,
+    title: "Menuiserie aluminium",
+    category: "Fenêtres",
+    description: "Installation de fenêtres en aluminium pour une villa moderne",
+    media: [
+      {
+        type: "image",
+        url: "/images/projects/menuiserie-alu-1.jpg"
+      },
+      {
+        type: "image",
+        url: "/images/projects/menuiserie-alu-2.jpg"
+      }
+    ],
+    documents: [
+      {
+        name: "Fiche technique",
+        description: "Caractéristiques techniques des fenêtres en aluminium",
+        url: "/documents/fiche-technique-alu.pdf"
+      }
+    ]
+  },
+  {
+    id: 2,
+    title: "Porte d'entrée",
+    category: "Portes",
+    description: "Porte d'entrée design en aluminium noir mat",
+    media: [
+      {
+        type: "image",
+        url: "/images/projects/porte-entree-1.jpg"
+      }
+    ],
+    documents: []
+  }
+];
+
+const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
+---
+
+<Layout title="Gestion des chantiers">
+  <div class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold">Gestion des chantiers</h1>
+            <p class="text-gray-600 mt-2">Gérez vos projets et réalisations</p>
+          </div>
+          <div class="flex gap-4">
+            <a 
+              href="/admin"
+              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-primary hover:text-primary transition-colors"
+            >
+              Retour
+            </a>
+            <button 
+              id="add-project-btn"
+              class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+            >
+              Ajouter un chantier
+            </button>
+          </div>
+        </div>
+
+        <!-- Projects List -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div class="p-6">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="border-b">
+                    <th class="text-left py-4 px-4">Photos</th>
+                    <th class="text-left py-4 px-4">Titre</th>
+                    <th class="text-left py-4 px-4">Catégorie</th>
+                    <th class="text-left py-4 px-4">Description</th>
+                    <th class="text-left py-4 px-4">Documents</th>
+                    <th class="text-right py-4 px-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {projects.map((project) => (
+                    <tr class="border-b hover:bg-gray-50">
+                      <td class="py-4 px-4">
+                        <div class="flex -space-x-2">
+                          {project.media.map((media, index) => (
+                            <img 
+                              src={media.url} 
+                              alt={`${project.title} - Photo ${index + 1}`}
+                              class="w-16 h-16 object-cover rounded-lg border-2 border-white"
+                            />
+                          ))}
+                        </div>
+                      </td>
+                      <td class="py-4 px-4">{project.title}</td>
+                      <td class="py-4 px-4">
+                        <span class="px-3 py-1 bg-primary/10 text-primary rounded-full">
+                          {project.category}
+                        </span>
+                      </td>
+                      <td class="py-4 px-4">{project.description}</td>
+                      <td class="py-4 px-4">
+                        {project.documents.length > 0 ? (
+                          <span class="text-primary font-medium">{project.documents.length} document(s)</span>
+                        ) : (
+                          <span class="text-gray-400">Aucun document</span>
+                        )}
+                      </td>
+                      <td class="py-4 px-4">
+                        <div class="flex justify-end gap-2">
+                          <button 
+                            class="edit-project-btn p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            data-project-id={project.id}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button 
+                            class="delete-project-btn p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            data-project-id={project.id}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal pour ajouter/modifier un chantier -->
+  <div id="project-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <h2 id="modal-title" class="text-2xl font-bold mb-6">Ajouter un chantier</h2>
+      
+      <form id="project-form" class="space-y-6">
+        <input type="hidden" id="project-id" />
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Titre
+          </label>
+          <input
+            type="text"
+            id="project-title"
+            required
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Catégorie
+          </label>
+          <select
+            id="project-category"
+            required
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          >
+            {categories.map((category) => (
+              <option value={category}>{category}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            id="project-description"
+            required
+            rows="3"
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Photos
+          </label>
+          <div class="space-y-4">
+            <!-- Liste des photos -->
+            <div id="media-list" class="grid grid-cols-4 gap-4">
+              <!-- Les photos seront ajoutées ici dynamiquement -->
+            </div>
+
+            <!-- Boutons d'ajout -->
+            <div class="flex gap-4">
+              <button
+                type="button"
+                id="add-image-btn"
+                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Ajouter une photo
+              </button>
+              <button
+                type="button"
+                id="add-video-btn"
+                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Ajouter une vidéo
+              </button>
+            </div>
+
+            <!-- Input file caché -->
+            <input
+              type="file"
+              id="media-input"
+              class="hidden"
+              multiple
+              accept="image/jpeg,image/png,image/gif,video/mp4,video/webm"
+            />
+          </div>
+        </div>
+
+        <!-- Documents PDF Section -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Documents PDF
+          </label>
+          <div class="space-y-4">
+            <!-- Liste des documents -->
+            <div id="documents-list" class="space-y-3">
+              <!-- Les documents seront ajoutés ici dynamiquement -->
+            </div>
+
+            <!-- Bouton d'ajout -->
+            <button
+              type="button"
+              id="add-document-btn"
+              class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Ajouter un document PDF
+            </button>
+
+            <!-- Input file caché -->
+            <input
+              type="file"
+              id="document-input"
+              class="hidden"
+              accept="application/pdf"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="button"
+            id="cancel-btn"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal pour ajouter/modifier un document PDF -->
+  <div id="document-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+      <h2 class="text-xl font-bold mb-6">Ajouter un document PDF</h2>
+      
+      <form id="document-form" class="space-y-6">
+        <input type="hidden" id="document-index" value="-1" />
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Nom du document
+          </label>
+          <input
+            type="text"
+            id="document-name"
+            required
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+            placeholder="Ex: Fiche technique, Brochure, etc."
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            id="document-description"
+            rows="3"
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+            placeholder="Description du document (optionnel)"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Fichier PDF
+          </label>
+          <div class="mt-1 flex items-center">
+            <span id="document-filename" class="text-gray-500">Aucun fichier sélectionné</span>
+            <button
+              type="button"
+              id="document-browse-btn"
+              class="ml-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Parcourir
+            </button>
+          </div>
+          <p class="mt-1 text-sm text-gray-500">Format accepté : PDF. Taille maximale : 10 Mo</p>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="button"
+            id="document-cancel-btn"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+          >
+            Ajouter
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Client-side authentication check
+  function checkAuth() {
+    const session = localStorage.getItem('alusteel_session');
+    if (!session) {
+      window.location.href = '/admin/login';
+    }
+  }
+  
+  // Check auth on page load
+  checkAuth();
+
+  // Définir les données pour qu'elles soient accessibles dans le script
+  const projects = [
+    {
+      id: 1,
+      title: "Menuiserie aluminium",
+      category: "Fenêtres",
+      description: "Installation de fenêtres en aluminium pour une villa moderne",
+      media: [
+        {
+          type: "image",
+          url: "/images/projects/menuiserie-alu-1.jpg"
+        },
+        {
+          type: "image",
+          url: "/images/projects/menuiserie-alu-2.jpg"
+        }
+      ],
+      documents: [
+        {
+          name: "Fiche technique",
+          description: "Caractéristiques techniques des fenêtres en aluminium",
+          url: "/documents/fiche-technique-alu.pdf"
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Porte d'entrée",
+      category: "Portes",
+      description: "Porte d'entrée design en aluminium noir mat",
+      media: [
+        {
+          type: "image",
+          url: "/images/projects/porte-entree-1.jpg"
+        }
+      ],
+      documents: []
+    }
+  ];
+
+  // Gestion du modal
+  const modal = document.getElementById('project-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const form = document.getElementById('project-form');
+  const addBtn = document.getElementById('add-project-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
+  const projectId = document.getElementById('project-id') as HTMLInputElement;
+  const projectTitle = document.getElementById('project-title') as HTMLInputElement;
+  const projectCategory = document.getElementById('project-category') as HTMLSelectElement;
+  const projectDescription = document.getElementById('project-description') as HTMLTextAreaElement;
+  const mediaList = document.getElementById('media-list');
+  const addImageBtn = document.getElementById('add-image-btn');
+  const addVideoBtn = document.getElementById('add-video-btn');
+  const mediaInput = document.getElementById('media-input') as HTMLInputElement;
+  
+  // Document modal elements
+  const documentModal = document.getElementById('document-modal');
+  const documentForm = document.getElementById('document-form');
+  const documentIndex = document.getElementById('document-index') as HTMLInputElement;
+  const documentName = document.getElementById('document-name') as HTMLInputElement;
+  const documentDescription = document.getElementById('document-description') as HTMLTextAreaElement;
+  const documentFilename = document.getElementById('document-filename');
+  const documentBrowseBtn = document.getElementById('document-browse-btn');
+  const documentCancelBtn = document.getElementById('document-cancel-btn');
+  const documentInput = document.getElementById('document-input') as HTMLInputElement;
+  const documentsList = document.getElementById('documents-list');
+  const addDocumentBtn = document.getElementById('add-document-btn');
+  
+  let projectMedia: { type: string; file: File; preview: string }[] = [];
+  let projectDocuments: { name: string; description: string; file: File; url?: string }[] = [];
+
+  // Fonction pour créer un élément média
+  function createMediaElement(type: string, file: File, preview: string) {
+    const div = document.createElement('div');
+    div.className = 'relative group';
+    
+    if (type === 'image') {
+      const img = document.createElement('img');
+      img.src = preview;
+      img.className = 'w-full h-32 object-cover rounded-lg';
+      div.appendChild(img);
+    } else {
+      const video = document.createElement('video');
+      video.src = preview;
+      video.className = 'w-full h-32 object-cover rounded-lg';
+      video.muted = true;
+      video.loop = true;
+      video.play();
+      div.appendChild(video);
+    }
+
+    // Bouton de suppression
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity';
+    deleteBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    `;
+    deleteBtn.addEventListener('click', () => {
+      const index = projectMedia.findIndex(m => m.preview === preview);
+      if (index !== -1) {
+        projectMedia.splice(index, 1);
+        div.remove();
+      }
+    });
+    div.appendChild(deleteBtn);
+
+    return div;
+  }
+
+  // Fonction pour créer un élément document
+  function createDocumentElement(document: { name: string; description: string; file?: File; url?: string }, index: number) {
+    const div = document.createElement('div');
+    div.className = 'p-4 border border-gray-200 rounded-lg';
+    
+    div.innerHTML = `
+      <div class="flex items-start justify-between">
+        <div class="flex items-start space-x-3">
+          <div class="p-2 bg-red-100 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <div>
+            <h4 class="font-medium">${document.name}</h4>
+            <p class="text-sm text-gray-500">${document.description || 'Aucune description'}</p>
+            <p class="text-xs text-gray-400 mt-1">${document.file ? document.file.name : (document.url ? document.url.split('/').pop() : '')}</p>
+          </div>
+        </div>
+        <div class="flex space-x-2">
+          <button type="button" class="edit-document-btn p-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" data-index="${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
+          <button type="button" class="delete-document-btn p-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors" data-index="${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Ajouter les gestionnaires d'événements
+    div.querySelector('.edit-document-btn')?.addEventListener('click', (e) => {
+      const index = parseInt((e.currentTarget as HTMLElement).dataset.index || '0');
+      openDocumentModal(index);
+    });
+
+    div.querySelector('.delete-document-btn')?.addEventListener('click', (e) => {
+      const index = parseInt((e.currentTarget as HTMLElement).dataset.index || '0');
+      if (confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
+        projectDocuments.splice(index, 1);
+        renderDocumentsList();
+      }
+    });
+
+    return div;
+  }
+
+  // Fonction pour rendre la liste des documents
+  function renderDocumentsList() {
+    if (!documentsList) return;
+    
+    documentsList.innerHTML = '';
+    projectDocuments.forEach((doc, index) => {
+      documentsList.appendChild(createDocumentElement(doc, index));
+    });
+  }
+
+  // Fonction pour ouvrir le modal de document
+  function openDocumentModal(index = -1) {
+    if (!documentModal) return;
+    
+    documentIndex.value = index.toString();
+    
+    if (index >= 0 && index < projectDocuments.length) {
+      // Mode édition
+      const doc = projectDocuments[index];
+      documentName.value = doc.name;
+      documentDescription.value = doc.description;
+      if (documentFilename) {
+        documentFilename.textContent = doc.file ? doc.file.name : (doc.url ? doc.url.split('/').pop() : 'Fichier existant');
+      }
+      documentForm?.querySelector('button[type="submit"]')?.textContent = 'Mettre à jour';
+    } else {
+      // Mode ajout
+      documentForm?.reset();
+      if (documentFilename) {
+        documentFilename.textContent = 'Aucun fichier sélectionné';
+      }
+      documentForm?.querySelector('button[type="submit"]')?.textContent = 'Ajouter';
+    }
+    
+    documentModal.classList.remove('hidden');
+    documentModal.classList.add('flex');
+  }
+
+  // Gérer l'ajout d'images
+  addImageBtn?.addEventListener('click', () => {
+    mediaInput.accept = 'image/jpeg,image/png,image/gif';
+    mediaInput.click();
+  });
+
+  // Gérer l'ajout de vidéos
+  addVideoBtn?.addEventListener('click', () => {
+    mediaInput.accept = 'video/mp4,video/webm';
+    mediaInput.click();
+  });
+
+  // Gérer l'ajout de documents
+  addDocumentBtn?.addEventListener('click', () => {
+    openDocumentModal();
+  });
+
+  // Gérer le bouton parcourir pour les documents
+  documentBrowseBtn?.addEventListener('click', () => {
+    documentInput.click();
+  });
+
+  // Gérer la sélection des fichiers média
+  mediaInput?.addEventListener('change', (e) => {
+    const files = (e.target as HTMLInputElement).files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      const isVideo = file.type.startsWith('video/');
+      const maxSize = isVideo ? 10 * 1024 * 1024 : 2 * 1024 * 1024;
+
+      // Vérifier la taille
+      if (file.size > maxSize) {
+        alert(`Le fichier ${file.name} est trop volumineux (max: ${maxSize / (1024 * 1024)}Mo)`);
+        return;
+      }
+
+      // Vérifier le type
+      if (isVideo && !file.type.match('video/(mp4|webm)')) {
+        alert('Format vidéo non supporté. Utilisez MP4 ou WebM.');
+        return;
+      } else if (!isVideo && !file.type.match('image/(jpeg|png|gif)')) {
+        alert('Format d\'image non supporté. Utilisez JPG, PNG ou GIF.');
+        return;
+      }
+
+      const preview = URL.createObjectURL(file);
+      const type = isVideo ? 'video' : 'image';
+      
+      projectMedia.push({ type, file, preview });
+      mediaList?.appendChild(createMediaElement(type, file, preview));
+    });
+
+    mediaInput.value = '';
+  });
+
+  // Gérer la sélection des fichiers PDF
+  documentInput?.addEventListener('change', (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    // Vérifier la taille (10 Mo max)
+    if (file.size > 10 * 1024 * 1024) {
+      alert(`Le fichier ${file.name} est trop volumineux (max: 10Mo)`);
+      documentInput.value = '';
+      return;
+    }
+
+    // Vérifier le type
+    if (!file.type.match('application/pdf')) {
+      alert('Format non supporté. Utilisez uniquement des fichiers PDF.');
+      documentInput.value = '';
+      return;
+    }
+
+    if (documentFilename) {
+      documentFilename.textContent = file.name;
+    }
+  });
+
+  // Ouvrir le modal pour ajouter un projet
+  addBtn?.addEventListener('click', () => {
+    modalTitle!.textContent = 'Ajouter un chantier';
+    form?.reset();
+    projectId.value = '';
+    projectMedia = [];
+    projectDocuments = [];
+    if (mediaList) mediaList.innerHTML = '';
+    if (documentsList) documentsList.innerHTML = '';
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
+  });
+
+  // Fermer le modal de projet
+  cancelBtn?.addEventListener('click', () => {
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
+  });
+
+  // Fermer le modal de document
+  documentCancelBtn?.addEventListener('click', () => {
+    documentModal?.classList.add('hidden');
+    documentModal?.classList.remove('flex');
+  });
+
+  // Gérer la soumission du formulaire de document
+  documentForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const index = parseInt(documentIndex.value);
+    const name = documentName.value;
+    const description = documentDescription.value;
+    const file = documentInput.files?.[0];
+    
+    if (!name) {
+      alert('Veuillez saisir un nom pour le document');
+      return;
+    }
+    
+    if (index >= 0 && index < projectDocuments.length) {
+      // Mode édition
+      const doc = projectDocuments[index];
+      doc.name = name;
+      doc.description = description;
+      if (file) {
+        doc.file = file;
+      }
+    } else {
+      // Mode ajout
+      if (!file) {
+        alert('Veuillez sélectionner un fichier PDF');
+        return;
+      }
+      projectDocuments.push({ name, description, file });
+    }
+    
+    renderDocumentsList();
+    documentModal?.classList.add('hidden');
+    documentModal?.classList.remove('flex');
+    documentInput.value = '';
+  });
+
+  // Gérer la soumission du formulaire de projet
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const isEditing = projectId.value !== '';
+    
+    // Simuler la sauvegarde des fichiers
+    console.log('Médias à uploader:', projectMedia.map(m => ({
+      type: m.type,
+      filename: m.file.name
+    })));
+    
+    console.log('Documents à uploader:', projectDocuments.map(d => ({
+      name: d.name,
+      description: d.description,
+      filename: d.file?.name
+    })));
+    
+    alert(`Chantier ${isEditing ? 'modifié' : 'ajouté'} avec succès (simulation)`);
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
+  });
+
+  // Gérer les boutons d'édition
+  document.querySelectorAll('.edit-project-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-project-id');
+      modalTitle!.textContent = 'Modifier le chantier';
+      
+      // Trouver le projet correspondant
+      const project = projects.find(p => p.id.toString() === id);
+      if (project) {
+        projectId.value = id!;
+        projectTitle.value = project.title;
+        projectCategory.value = project.category;
+        projectDescription.value = project.description;
+        
+        // Charger les médias existants
+        projectMedia = [];
+        if (mediaList) mediaList.innerHTML = '';
+        
+        project.media.forEach(m => {
+          // Dans une vraie application, nous chargerions les vrais fichiers
+          const dummyFile = new File([""], m.url.split('/').pop()!, { type: `${m.type}/${m.type === 'video' ? 'mp4' : 'jpeg'}` });
+          const preview = m.url;
+          projectMedia.push({ type: m.type, file: dummyFile, preview });
+          mediaList?.appendChild(createMediaElement(m.type, dummyFile, preview));
+        });
+        
+        // Charger les documents existants
+        projectDocuments = [];
+        project.documents.forEach(d => {
+          projectDocuments.push({
+            name: d.name,
+            description: d.description,
+            url: d.url,
+            file: new File([""], d.url.split('/').pop()!, { type: 'application/pdf' })
+          });
+        });
+        renderDocumentsList();
+      }
+      
+      modal?.classList.remove('hidden');
+      modal?.classList.add('flex');
+    });
+  });
+
+  // Gérer les boutons de suppression
+  document.querySelectorAll('.delete-project-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-project-id');
+      if (confirm('Êtes-vous sûr de vouloir supprimer ce chantier ?')) {
+        alert('Chantier supprimé avec succès (simulation)');
+      }
+    });
+  });
+</script>

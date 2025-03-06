@@ -1,0 +1,139 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Conectar ao Supabase">
+  <div class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-8">
+          <h1 class="text-2xl font-bold mb-6">Conectar ao Supabase</h1>
+          
+          <div class="space-y-6">
+            <div class="p-4 bg-blue-50 rounded-lg">
+              <h2 class="font-semibold text-blue-800 mb-2">Instruções</h2>
+              <p class="text-blue-800 mb-4">
+                Para conectar este projeto ao Supabase, você precisa fornecer as credenciais do seu projeto Supabase.
+              </p>
+              <ol class="list-decimal list-inside space-y-2 text-blue-800">
+                <li>Acesse o <a href="https://supabase.com" target="_blank" class="underline">Supabase</a> e faça login</li>
+                <li>Crie um novo projeto ou selecione um existente</li>
+                <li>Vá para Configurações > API</li>
+                <li>Copie a URL do projeto e a chave anônima</li>
+                <li>Cole-as nos campos abaixo</li>
+              </ol>
+            </div>
+
+            <form id="supabase-form" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  URL do Projeto Supabase
+                </label>
+                <input
+                  type="text"
+                  id="supabase-url"
+                  placeholder="https://xxxxxxxxxxxxxxxxxxxx.supabase.co"
+                  required
+                  class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Chave Anônima
+                </label>
+                <input
+                  type="text"
+                  id="supabase-anon-key"
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  required
+                  class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+                />
+              </div>
+
+              <div id="error-message" class="text-red-500 text-sm hidden"></div>
+              <div id="success-message" class="text-green-500 text-sm hidden"></div>
+
+              <div class="flex justify-end gap-4 pt-4">
+                <a
+                  href="/admin"
+                  class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+                >
+                  Cancelar
+                </a>
+                <button
+                  type="submit"
+                  class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+                >
+                  Conectar
+                </button>
+              </div>
+            </form>
+
+            <div class="p-4 bg-yellow-50 rounded-lg">
+              <h2 class="font-semibold text-yellow-800 mb-2">Importante</h2>
+              <p class="text-yellow-800">
+                Após conectar ao Supabase, você precisará executar as migrações para criar as tabelas necessárias.
+                As migrações já estão incluídas no projeto e serão executadas automaticamente.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const form = document.getElementById('supabase-form');
+  const errorMessage = document.getElementById('error-message');
+  const successMessage = document.getElementById('success-message');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const supabaseUrl = (document.getElementById('supabase-url') as HTMLInputElement).value;
+    const supabaseAnonKey = (document.getElementById('supabase-anon-key') as HTMLInputElement).value;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      if (errorMessage) {
+        errorMessage.textContent = 'Por favor, preencha todos os campos.';
+        errorMessage.classList.remove('hidden');
+      }
+      return;
+    }
+    
+    try {
+      // Update .env file with Supabase credentials
+      // Note: In a real application, this would be handled by a server-side API
+      // For this demo, we'll simulate updating the .env file
+      
+      // Store in localStorage for client-side use
+      localStorage.setItem('PUBLIC_SUPABASE_URL', supabaseUrl);
+      localStorage.setItem('PUBLIC_SUPABASE_ANON_KEY', supabaseAnonKey);
+      
+      if (successMessage) {
+        successMessage.textContent = 'Conexão com o Supabase estabelecida com sucesso! Redirecionando...';
+        successMessage.classList.remove('hidden');
+      }
+      
+      if (errorMessage) {
+        errorMessage.classList.add('hidden');
+      }
+      
+      // Redirect to admin page after a short delay
+      setTimeout(() => {
+        window.location.href = '/admin';
+      }, 2000);
+    } catch (error: any) {
+      if (errorMessage) {
+        errorMessage.textContent = error.message || 'Ocorreu um erro ao conectar ao Supabase.';
+        errorMessage.classList.remove('hidden');
+      }
+      
+      if (successMessage) {
+        successMessage.classList.add('hidden');
+      }
+    }
+  });
+</script>

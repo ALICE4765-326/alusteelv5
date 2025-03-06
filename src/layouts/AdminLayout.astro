@@ -1,0 +1,62 @@
+---
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import { supabase } from '../lib/supabase';
+import ConnectSupabaseButton from '../components/ConnectSupabaseButton.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  requireAuth?: boolean;
+}
+
+const { 
+  title, 
+  description = "Alusteel Admin - Painel de Administração", 
+  requireAuth = true 
+} = Astro.props;
+
+// Check if Supabase is configured
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && 
+  supabaseUrl !== 'your-project-url' && supabaseAnonKey !== 'your-anon-key';
+
+// Check authentication if required
+let isAuthenticated = false;
+if (requireAuth) {
+  const { data } = await supabase.auth.getSession();
+  isAuthenticated = data.session !== null;
+  
+  if (!isAuthenticated && isSupabaseConfigured) {
+    return Astro.redirect('/admin/login');
+  }
+}
+---
+
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title} | Alusteel Admin</title>
+    <meta name="description" content={description} />
+  </head>
+  <body class="min-h-screen bg-gray-50">
+    {!isSupabaseConfigured && <ConnectSupabaseButton />}
+    
+    <slot />
+    
+    <script>
+      // Client-side authentication check
+      import { checkClientAuth } from '../lib/auth';
+      
+      if ({requireAuth}) {
+        checkClientAuth();
+      }
+    </script>
+  </body>
+</html>

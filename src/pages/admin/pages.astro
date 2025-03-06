@@ -1,0 +1,351 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// Simulation de données locales
+const pages = [
+  {
+    id: 1,
+    name: "Accueil",
+    path: "/",
+    visible: true,
+    banner: null,
+    bannerVideo: null,
+    bannerType: "color",
+    bannerColor: "#1a365d"
+  },
+  {
+    id: 2,
+    name: "Nos Métiers",
+    path: "/nos-metiers",
+    visible: true,
+    banner: "/images/banners/metiers-banner.jpg",
+    bannerVideo: null,
+    bannerType: "image",
+    bannerColor: "#1a365d"
+  },
+  {
+    id: 3,
+    name: "Nos Chantiers",
+    path: "/nos-chantiers",
+    visible: true,
+    banner: "/images/banners/chantiers-banner.jpg",
+    bannerVideo: null,
+    bannerType: "image",
+    bannerColor: "#1a365d"
+  },
+  {
+    id: 4,
+    name: "Nos Partenaires",
+    path: "/nos-partenaires",
+    visible: true,
+    banner: "/images/banners/partenaires-banner.jpg",
+    bannerVideo: null,
+    bannerType: "image",
+    bannerColor: "#1a365d"
+  },
+  {
+    id: 5,
+    name: "Témoignages",
+    path: "/temoignages",
+    visible: true,
+    banner: "/images/banners/temoignages-banner.jpg",
+    bannerVideo: null,
+    bannerType: "image",
+    bannerColor: "#1a365d"
+  },
+  {
+    id: 6,
+    name: "Blog",
+    path: "/blog",
+    visible: true,
+    banner: "/images/banners/blog-banner.jpg",
+    bannerVideo: null,
+    bannerType: "image",
+    bannerColor: "#1a365d"
+  },
+  {
+    id: 7,
+    name: "Contact",
+    path: "/contact",
+    visible: true,
+    banner: null,
+    bannerVideo: null,
+    bannerType: "color",
+    bannerColor: "#1a365d"
+  }
+];
+
+// Pages sans prévisualisation de bannière
+const pagesWithoutBannerPreview = ['/contact'];
+---
+
+<Layout title="Gestion des pages">
+  <div class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold">Gestion des pages</h1>
+            <p class="text-gray-600 mt-2">Gérez la visibilité et les bannières de vos pages</p>
+          </div>
+          <a 
+            href="/admin"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-primary hover:text-primary transition-colors"
+          >
+            Retour
+          </a>
+        </div>
+
+        <!-- Pages List -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div class="p-6">
+            <div class="space-y-6">
+              {pages.map((page) => (
+                <div class="p-4 border rounded-lg hover:border-primary transition-colors">
+                  <div class="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 class="font-semibold text-lg">{page.name}</h3>
+                      <p class="text-gray-600 text-sm">{page.path}</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        class="sr-only peer"
+                        checked={page.visible}
+                        data-page-id={page.id}
+                      />
+                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                      <span class="ms-3 text-sm font-medium text-gray-700">
+                        {page.visible ? 'Visible' : 'Masquée'}
+                      </span>
+                    </label>
+                  </div>
+
+                  <!-- Banner Management -->
+                  <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-medium mb-2">Bannière de la page</h4>
+                    <div class="space-y-4">
+                      <!-- Banner Type Selection -->
+                      <div class="flex items-center gap-4">
+                        <label class="text-sm font-medium text-gray-700">Type de bannière :</label>
+                        <select
+                          class="px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+                          data-page-id={page.id}
+                          value={page.bannerType}
+                        >
+                          <option value="color">Couleur</option>
+                          <option value="image">Image</option>
+                          {page.path === '/' && (
+                            <option value="video">Vidéo</option>
+                          )}
+                        </select>
+                      </div>
+
+                      <!-- Image Upload -->
+                      <div class="flex items-start gap-4" data-banner-type="image">
+                        <div class="flex-grow">
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/gif"
+                            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+                            data-page-id={page.id}
+                          />
+                          <div class="mt-1 text-sm text-gray-500">
+                            <p>Formats acceptés : JPG, PNG, GIF. Taille recommandée : 1920x400px</p>
+                          </div>
+                        </div>
+                        {page.banner && !pagesWithoutBannerPreview.includes(page.path) && (
+                          <img
+                            src={page.banner}
+                            alt={`Bannière ${page.name}`}
+                            class="w-32 h-16 object-cover rounded-lg"
+                          />
+                        )}
+                      </div>
+
+                      <!-- Video Upload (Only for homepage) -->
+                      {page.path === '/' && (
+                        <div class="flex items-start gap-4" data-banner-type="video">
+                          <div class="flex-grow">
+                            <input
+                              type="file"
+                              accept="video/mp4,video/webm"
+                              class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+                              data-page-id={page.id}
+                            />
+                            <div class="mt-1 text-sm text-gray-500">
+                              <p>Formats acceptés : MP4, WebM. Taille maximale : 10 Mo</p>
+                            </div>
+                          </div>
+                          {page.bannerVideo && (
+                            <video
+                              src={page.bannerVideo}
+                              class="w-32 h-16 object-cover rounded-lg"
+                              muted
+                              loop
+                            />
+                          )}
+                        </div>
+                      )}
+
+                      <!-- Color Picker -->
+                      <div class="flex items-center gap-4" data-banner-type="color">
+                        <label class="text-sm font-medium text-gray-700">
+                          Couleur de fond :
+                        </label>
+                        <input
+                          type="color"
+                          value={page.bannerColor}
+                          class="h-8 w-16 rounded cursor-pointer"
+                          data-page-id={page.id}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 text-center">
+          <button
+            id="save-btn"
+            class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+          >
+            Enregistrer les modifications
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Gérer les changements de visibilité
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+  const fileInputs = document.querySelectorAll('input[type="file"]');
+  const colorInputs = document.querySelectorAll('input[type="color"]');
+  const bannerTypeSelects = document.querySelectorAll('select');
+  const saveBtn = document.getElementById('save-btn');
+
+  // Gérer les changements de type de bannière
+  bannerTypeSelects.forEach(select => {
+    select.addEventListener('change', (e) => {
+      const container = (e.target as HTMLSelectElement).closest('.bg-gray-50');
+      const selectedType = (e.target as HTMLSelectElement).value;
+      
+      // Cacher tous les conteneurs
+      container?.querySelectorAll('[data-banner-type]').forEach(el => {
+        (el as HTMLElement).style.display = 'none';
+      });
+      
+      // Afficher le conteneur correspondant au type sélectionné
+      const selectedContainer = container?.querySelector(`[data-banner-type="${selectedType}"]`);
+      if (selectedContainer) {
+        (selectedContainer as HTMLElement).style.display = 'flex';
+      }
+    });
+
+    // Initialiser l'affichage
+    select.dispatchEvent(new Event('change'));
+  });
+
+  checkboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      const label = (e.target as HTMLInputElement).nextElementSibling?.nextElementSibling;
+      if (label) {
+        label.textContent = (e.target as HTMLInputElement).checked ? 'Visible' : 'Masquée';
+      }
+    });
+  });
+
+  // Gérer les changements de couleur
+  colorInputs.forEach(input => {
+    input.addEventListener('input', (e) => {
+      const pageId = (e.target as HTMLInputElement).dataset.pageId;
+      const preview = document.querySelector(`.banner-preview[data-page-id="${pageId}"]`);
+      if (preview) {
+        preview.style.backgroundColor = (e.target as HTMLInputElement).value;
+      }
+    });
+  });
+
+  // Gérer les changements de fichiers
+  fileInputs.forEach(input => {
+    input.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const isVideo = file.type.startsWith('video/');
+        const maxSize = isVideo ? 10 * 1024 * 1024 : 2 * 1024 * 1024; // 10 Mo pour les vidéos, 2 Mo pour les images
+
+        // Vérifier la taille du fichier
+        if (file.size > maxSize) {
+          alert(`Le fichier ne doit pas dépasser ${maxSize / (1024 * 1024)} Mo`);
+          (e.target as HTMLInputElement).value = '';
+          return;
+        }
+
+        // Vérifier le type de fichier
+        if (isVideo && !file.type.match('video/(mp4|webm)')) {
+          alert('Format vidéo non supporté. Utilisez MP4 ou WebM.');
+          (e.target as HTMLInputElement).value = '';
+          return;
+        } else if (!isVideo && !file.type.match('image/(jpeg|png|gif)')) {
+          alert('Format d\'image non supporté. Utilisez JPG, PNG ou GIF.');
+          (e.target as HTMLInputElement).value = '';
+          return;
+        }
+
+        // Prévisualiser le fichier
+        const pageId = (e.target as HTMLInputElement).dataset.pageId;
+        const container = (e.target as HTMLInputElement).closest('[data-banner-type]');
+        const previewContainer = container?.querySelector('.w-32');
+        
+        if (previewContainer) {
+          if (isVideo) {
+            const video = document.createElement('video');
+            video.src = URL.createObjectURL(file);
+            video.className = 'w-32 h-16 object-cover rounded-lg';
+            video.muted = true;
+            video.loop = true;
+            video.play();
+            previewContainer.replaceWith(video);
+          } else {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.alt = 'Aperçu de la bannière';
+            img.className = 'w-32 h-16 object-cover rounded-lg';
+            previewContainer.replaceWith(img);
+          }
+        }
+      }
+    });
+  });
+
+  // Gérer la sauvegarde
+  saveBtn?.addEventListener('click', () => {
+    const updatedPages = Array.from(bannerTypeSelects).map(select => {
+      const pageId = select.dataset.pageId;
+      const bannerType = select.value;
+      const fileInput = document.querySelector(`input[type="file"][data-page-id="${pageId}"]`) as HTMLInputElement;
+      const colorInput = document.querySelector(`input[type="color"][data-page-id="${pageId}"]`) as HTMLInputElement;
+      const checkbox = document.querySelector(`input[type="checkbox"][data-page-id="${pageId}"]`) as HTMLInputElement;
+      const file = fileInput?.files?.[0];
+
+      return {
+        id: pageId,
+        visible: checkbox.checked,
+        bannerType,
+        banner: bannerType === 'image' && file ? file.name : null,
+        bannerVideo: bannerType === 'video' && file ? file.name : null,
+        bannerColor: colorInput.value
+      };
+    });
+
+    // Simuler la sauvegarde
+    console.log('Pages mises à jour:', updatedPages);
+    alert('Modifications enregistrées avec succès (simulation)');
+  });
+</script>

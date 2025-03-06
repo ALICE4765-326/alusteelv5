@@ -1,0 +1,445 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+// Check authentication on page load
+let isAuthenticated = false;
+const sessionStr = Astro.cookies.get('alusteel_session')?.value;
+
+if (sessionStr) {
+  try {
+    const session = JSON.parse(sessionStr);
+    if (session && session.user) {
+      isAuthenticated = true;
+    }
+  } catch (e) {
+    // Invalid session
+  }
+}
+
+// Redirect if not authenticated
+if (!isAuthenticated) {
+  return Astro.redirect('/admin/login');
+}
+
+// Simulation de données locales
+const factoryPhotos = [
+  {
+    id: 1,
+    title: "Machines de découpe aluminium",
+    alt: "Machines de découpe aluminium modernes dans notre usine",
+    url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  },
+  {
+    id: 2,
+    title: "Ligne de production",
+    alt: "Ligne de production de menuiseries aluminium",
+    url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+  }
+];
+---
+
+<Layout title="Gestion des photos d'usine">
+  <div class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold">Gestion des photos d'usine</h1>
+            <p class="text-gray-600 mt-2">Gérez les photos de la section "Notre expertise de fabrication"</p>
+          </div>
+          <a 
+            href="/admin"
+            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-primary hover:text-primary transition-colors"
+          >
+            Retour
+          </a>
+        </div>
+
+        <!-- Factory Photos Section -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <div>
+                <h2 class="text-2xl font-bold">Photos d'usine</h2>
+                <p class="text-gray-600 mt-1">Gérez les photos qui apparaissent dans la section "Notre expertise de fabrication" sur la page d'accueil</p>
+              </div>
+              <button 
+                id="add-factory-btn"
+                class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+              >
+                Ajouter une photo
+              </button>
+            </div>
+
+            <!-- Photos Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="factory-photos">
+              {factoryPhotos.map((photo) => (
+                <div class="relative group overflow-hidden rounded-lg shadow-md" data-photo-id={photo.id}>
+                  <img 
+                    src={photo.url} 
+                    alt={photo.alt}
+                    class="w-full h-48 object-cover"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div class="absolute bottom-0 left-0 right-0 p-4">
+                      <h3 class="text-white font-semibold">{photo.title}</h3>
+                    </div>
+                    <div class="absolute top-2 right-2 flex gap-2">
+                      <button class="edit-photo-btn p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button class="delete-photo-btn p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <!-- Text Content Section -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div class="p-6">
+            <h2 class="text-2xl font-bold mb-6">Texte de la section</h2>
+            
+            <form id="factory-text-form" class="space-y-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Titre
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value="Notre expertise de fabrication"
+                  class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Paragraphe principal
+                </label>
+                <textarea
+                  name="main_paragraph"
+                  rows="3"
+                  class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+                >Notre usine est équipée de machines modernes, nous permettant de travailler avec toutes les marques et gammes disponibles : Cortizo, Technal, Schüco et toutes les autres.</textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Paragraphe secondaire
+                </label>
+                <textarea
+                  name="secondary_paragraph"
+                  rows="3"
+                  class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+                >Grâce à notre équipement de pointe et notre savoir-faire, nous garantissons des produits de haute qualité, fabriqués avec précision et dans le respect des normes les plus exigeantes.</textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                  Texte du lien
+                </label>
+                <input
+                  type="text"
+                  name="link_text"
+                  value="En savoir plus sur nos métiers"
+                  class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+                />
+              </div>
+
+              <button
+                type="submit"
+                class="w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+              >
+                Enregistrer les modifications
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal pour ajouter/modifier une photo -->
+  <div id="photo-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+      <h2 id="modal-title" class="text-2xl font-bold mb-6">Ajouter une photo</h2>
+      
+      <form id="photo-form" class="space-y-6">
+        <input type="hidden" id="photo-id" />
+        
+        <div>
+          <label for="photo-title" class="block text-sm font-medium text-gray-700 mb-1">
+            Titre
+          </label>
+          <input
+            type="text"
+            id="photo-title"
+            placeholder="Ex: Machines de découpe aluminium"
+            required
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label for="photo-alt" class="block text-sm font-medium text-gray-700 mb-1">
+            Texte alternatif
+          </label>
+          <input
+            type="text"
+            id="photo-alt"
+            placeholder="Description pour l'accessibilité"
+            required
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Photo
+          </label>
+          <div class="mt-1 flex items-center">
+            <div id="photo-preview" class="hidden w-32 h-32 bg-gray-100 rounded-lg overflow-hidden mr-4">
+              <img id="preview-image" class="w-full h-full object-cover" />
+            </div>
+            <div class="flex-1">
+              <input
+                type="file"
+                id="photo-file"
+                accept="image/jpeg,image/png"
+                class="hidden"
+              />
+              <div class="flex items-center">
+                <span id="photo-filename" class="text-gray-500 flex-1">Aucun fichier sélectionné</span>
+                <button
+                  type="button"
+                  id="photo-browse-btn"
+                  class="ml-3 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Parcourir
+                </button>
+              </div>
+              <p class="mt-1 text-sm text-gray-500">Formats acceptés : JPG, PNG. Taille max : 2 Mo</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="button"
+            id="cancel-btn"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Client-side authentication check
+  function checkAuth() {
+    const session = localStorage.getItem('alusteel_session');
+    if (!session) {
+      window.location.href = '/admin/login';
+    }
+  }
+  
+  // Check auth on page load
+  checkAuth();
+
+  // Modal elements
+  const modal = document.getElementById('photo-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const form = document.getElementById('photo-form');
+  const photoId = document.getElementById('photo-id') as HTMLInputElement;
+  const photoTitle = document.getElementById('photo-title') as HTMLInputElement;
+  const photoAlt = document.getElementById('photo-alt') as HTMLInputElement;
+  const photoFile = document.getElementById('photo-file') as HTMLInputElement;
+  const photoFilename = document.getElementById('photo-filename');
+  const photoBrowseBtn = document.getElementById('photo-browse-btn');
+  const photoPreview = document.getElementById('photo-preview');
+  const previewImage = document.getElementById('preview-image') as HTMLImageElement;
+  const cancelBtn = document.getElementById('cancel-btn');
+  
+  // Add button
+  const addFactoryBtn = document.getElementById('add-factory-btn');
+  
+  // Edit and delete buttons
+  const editBtns = document.querySelectorAll('.edit-photo-btn');
+  const deleteBtns = document.querySelectorAll('.delete-photo-btn');
+
+  // Text form
+  const textForm = document.getElementById('factory-text-form');
+
+  // Function to open modal
+  function openModal(id = null) {
+    // Reset form
+    form?.reset();
+    
+    if (id) {
+      // Edit mode
+      photoId.value = id;
+      modalTitle!.textContent = "Modifier la photo";
+      
+      // Find photo data
+      const photoElement = document.querySelector(`[data-photo-id="${id}"]`);
+      if (photoElement) {
+        const img = photoElement.querySelector('img');
+        const title = photoElement.querySelector('h3');
+        
+        if (img && title) {
+          photoTitle.value = title.textContent || '';
+          photoAlt.value = img.getAttribute('alt') || '';
+          
+          // Show preview
+          if (photoPreview) {
+            photoPreview.classList.remove('hidden');
+            previewImage.src = img.src;
+          }
+        }
+      }
+    } else {
+      // Add mode
+      photoId.value = '';
+      modalTitle!.textContent = "Ajouter une photo";
+      
+      // Hide preview
+      if (photoPreview) {
+        photoPreview.classList.add('hidden');
+      }
+    }
+    
+    // Show modal
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
+  }
+
+  // Add event listeners
+  addFactoryBtn?.addEventListener('click', () => {
+    openModal();
+  });
+  
+  // Browse button
+  photoBrowseBtn?.addEventListener('click', () => {
+    photoFile?.click();
+  });
+  
+  // File input change
+  photoFile?.addEventListener('change', (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+      // Check file size (2MB max)
+      if (file.size > 2 * 1024 * 1024) {
+        alert('Le fichier est trop volumineux. La taille maximale est de 2 Mo.');
+        photoFile.value = '';
+        return;
+      }
+      
+      // Check file type
+      if (!file.type.match('image/(jpeg|png)')) {
+        alert('Format non supporté. Utilisez JPG ou PNG.');
+        photoFile.value = '';
+        return;
+      }
+      
+      // Update filename
+      if (photoFilename) {
+        photoFilename.textContent = file.name;
+      }
+      
+      // Show preview
+      if (photoPreview && previewImage) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImage.src = e.target?.result as string;
+          photoPreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  });
+  
+  // Cancel button
+  cancelBtn?.addEventListener('click', () => {
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
+  });
+  
+  // Form submit
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const id = photoId.value;
+    const title = photoTitle.value;
+    const alt = photoAlt.value;
+    const file = photoFile.files?.[0];
+    
+    // Validate
+    if (!title || !alt) {
+      alert('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+    
+    // In a real app, we would upload the file and save the data
+    // For this demo, we'll just show a success message
+    
+    alert(`Photo ${id ? 'modifiée' : 'ajoutée'} avec succès (simulation)`);
+    
+    // Close modal
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
+  });
+  
+  // Edit buttons
+  editBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const photoElement = btn.closest('[data-photo-id]');
+      if (photoElement) {
+        const id = photoElement.getAttribute('data-photo-id');
+        if (id) {
+          openModal(id);
+        }
+      }
+    });
+  });
+  
+  // Delete buttons
+  deleteBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const photoElement = btn.closest('[data-photo-id]');
+      if (photoElement) {
+        const id = photoElement.getAttribute('data-photo-id');
+        if (id && confirm('Êtes-vous sûr de vouloir supprimer cette photo ?')) {
+          // In a real app, we would delete the photo from the server
+          // For this demo, we'll just remove the element from the DOM
+          photoElement.remove();
+          alert('Photo supprimée avec succès (simulation)');
+        }
+      }
+    });
+  });
+
+  // Text form submit
+  textForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    alert('Texte mis à jour avec succès (simulation)');
+  });
+</script>

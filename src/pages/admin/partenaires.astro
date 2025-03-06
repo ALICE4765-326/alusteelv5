@@ -1,0 +1,391 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const partners = [
+  {
+    id: 1,
+    name: "ProPoseAlu",
+    description: "Spécialiste de la pose, ProPoseAlu assure une installation soignée et professionnelle de nos menuiseries et éléments de serrurerie, partout en France.",
+    icon: "M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+    media: [
+      {
+        type: "image",
+        url: "/images/partners/propose-alu-1.jpg"
+      },
+      {
+        type: "image",
+        url: "/images/partners/propose-alu-2.jpg"
+      }
+    ]
+  },
+  {
+    id: 2,
+    name: "Portails en Kits",
+    description: "Expert en kits de portails, portillons et accessoires d'entretien, Portails en Kits propose des solutions simples à monter, robustes et adaptées à tous les besoins.",
+    icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+    media: [
+      {
+        type: "image",
+        url: "/images/partners/portails-kits-1.jpg"
+      }
+    ]
+  }
+];
+---
+
+<Layout title="Gestion des partenaires">
+  <!-- Le reste du template HTML reste inchangé -->
+  <div class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold">Gestion des partenaires</h1>
+            <p class="text-gray-600 mt-2">Gérez vos partenaires commerciaux</p>
+          </div>
+          <div class="flex gap-4">
+            <a 
+              href="/admin"
+              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-primary hover:text-primary transition-colors"
+            >
+              Retour
+            </a>
+            <button 
+              id="add-partner-btn"
+              class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+            >
+              Ajouter un partenaire
+            </button>
+          </div>
+        </div>
+
+        <!-- Partners List -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div class="p-6">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead>
+                  <tr class="border-b">
+                    <th class="text-left py-4 px-4">Photos</th>
+                    <th class="text-left py-4 px-4">Nom</th>
+                    <th class="text-left py-4 px-4">Description</th>
+                    <th class="text-right py-4 px-4">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {partners.map((partner) => (
+                    <tr class="border-b hover:bg-gray-50">
+                      <td class="py-4 px-4">
+                        <div class="flex -space-x-2">
+                          {partner.media.map((media, index) => (
+                            <img 
+                              src={media.url} 
+                              alt={`${partner.name} - Photo ${index + 1}`}
+                              class="w-16 h-16 object-cover rounded-lg border-2 border-white"
+                            />
+                          ))}
+                        </div>
+                      </td>
+                      <td class="py-4 px-4 font-medium">{partner.name}</td>
+                      <td class="py-4 px-4 text-gray-600">{partner.description}</td>
+                      <td class="py-4 px-4">
+                        <div class="flex justify-end gap-2">
+                          <button 
+                            class="edit-partner-btn p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            data-partner-id={partner.id}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button 
+                            class="delete-partner-btn p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            data-partner-id={partner.id}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal pour ajouter/modifier un partenaire -->
+  <div id="partner-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full mx-4">
+      <h2 id="modal-title" class="text-2xl font-bold mb-6">Ajouter un partenaire</h2>
+      
+      <form id="partner-form" class="space-y-6">
+        <input type="hidden" id="partner-id" />
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Nom
+          </label>
+          <input
+            type="text"
+            id="partner-name"
+            required
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Description
+          </label>
+          <textarea
+            id="partner-description"
+            required
+            rows="3"
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Photos
+          </label>
+          <div class="space-y-4">
+            <!-- Liste des photos -->
+            <div id="media-list" class="grid grid-cols-4 gap-4">
+              <!-- Les photos seront ajoutées ici dynamiquement -->
+            </div>
+
+            <!-- Bouton d'ajout -->
+            <div class="flex gap-4">
+              <button
+                type="button"
+                id="add-photo-btn"
+                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Ajouter une photo
+              </button>
+            </div>
+
+            <!-- Input file caché -->
+            <input
+              type="file"
+              id="media-input"
+              class="hidden"
+              multiple
+              accept="image/jpeg,image/png,image/gif"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="button"
+            id="cancel-btn"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+          >
+            Annuler
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Définir les données pour qu'elles soient accessibles dans le script
+  const partners = [
+    {
+      id: 1,
+      name: "ProPoseAlu",
+      description: "Spécialiste de la pose, ProPoseAlu assure une installation soignée et professionnelle de nos menuiseries et éléments de serrurerie, partout en France.",
+      icon: "M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+      media: [
+        {
+          type: "image",
+          url: "/images/partners/propose-alu-1.jpg"
+        },
+        {
+          type: "image",
+          url: "/images/partners/propose-alu-2.jpg"
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: "Portails en Kits",
+      description: "Expert en kits de portails, portillons et accessoires d'entretien, Portails en Kits propose des solutions simples à monter, robustes et adaptées à tous les besoins.",
+      icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+      media: [
+        {
+          type: "image",
+          url: "/images/partners/portails-kits-1.jpg"
+        }
+      ]
+    }
+  ];
+
+  const modal = document.getElementById('partner-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const form = document.getElementById('partner-form');
+  const addBtn = document.getElementById('add-partner-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
+  const partnerId = document.getElementById('partner-id') as HTMLInputElement;
+  const partnerName = document.getElementById('partner-name') as HTMLInputElement;
+  const partnerDescription = document.getElementById('partner-description') as HTMLTextAreaElement;
+  const mediaList = document.getElementById('media-list');
+  const addPhotoBtn = document.getElementById('add-photo-btn');
+  const mediaInput = document.getElementById('media-input') as HTMLInputElement;
+  
+  let partnerMedia: { file: File; preview: string }[] = [];
+
+  // Fonction pour créer un élément média
+  function createMediaElement(file: File, preview: string) {
+    const div = document.createElement('div');
+    div.className = 'relative group';
+    
+    const img = document.createElement('img');
+    img.src = preview;
+    img.className = 'w-full h-32 object-cover rounded-lg';
+    div.appendChild(img);
+
+    // Bouton de suppression
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity';
+    deleteBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    `;
+    deleteBtn.addEventListener('click', () => {
+      const index = partnerMedia.findIndex(m => m.preview === preview);
+      if (index !== -1) {
+        partnerMedia.splice(index, 1);
+        div.remove();
+      }
+    });
+    div.appendChild(deleteBtn);
+
+    return div;
+  }
+
+  // Gérer l'ajout de photos
+  addPhotoBtn?.addEventListener('click', () => {
+    mediaInput.click();
+  });
+
+  // Gérer la sélection des fichiers
+  mediaInput?.addEventListener('change', (e) => {
+    const files = (e.target as HTMLInputElement).files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      // Vérifier la taille du fichier (2 Mo max)
+      if (file.size > 2 * 1024 * 1024) {
+        alert(`Le fichier ${file.name} est trop volumineux (max: 2Mo)`);
+        return;
+      }
+
+      // Vérifier le type de fichier
+      if (!file.type.match('image/(jpeg|png|gif)')) {
+        alert('Format d\'image non supporté. Utilisez JPG, PNG ou GIF.');
+        return;
+      }
+
+      const preview = URL.createObjectURL(file);
+      partnerMedia.push({ file, preview });
+      mediaList?.appendChild(createMediaElement(file, preview));
+    });
+
+    mediaInput.value = '';
+  });
+
+  // Ouvrir le modal pour ajouter
+  addBtn?.addEventListener('click', () => {
+    modalTitle!.textContent = 'Ajouter un partenaire';
+    form?.reset();
+    partnerId.value = '';
+    partnerMedia = [];
+    if (mediaList) mediaList.innerHTML = '';
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
+  });
+
+  // Fermer le modal
+  cancelBtn?.addEventListener('click', () => {
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
+  });
+
+  // Gérer la soumission du formulaire
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const isEditing = partnerId.value !== '';
+    
+    // Simuler la sauvegarde des fichiers
+    console.log('Photos à uploader:', partnerMedia.map(m => ({
+      filename: m.file.name
+    })));
+    
+    alert(`Partenaire ${isEditing ? 'modifié' : 'ajouté'} avec succès (simulation)`);
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
+  });
+
+  // Gérer les boutons d'édition
+  document.querySelectorAll('.edit-partner-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-partner-id');
+      modalTitle!.textContent = 'Modifier le partenaire';
+      
+      // Trouver le partenaire correspondant
+      const partner = partners.find(p => p.id.toString() === id);
+      if (partner) {
+        partnerId.value = id!;
+        partnerName.value = partner.name;
+        partnerDescription.value = partner.description;
+        
+        // Charger les médias existants
+        partnerMedia = [];
+        if (mediaList) mediaList.innerHTML = '';
+        
+        partner.media.forEach(m => {
+          // Dans une vraie application, nous chargerions les vrais fichiers
+          const dummyFile = new File([""], m.url.split('/').pop()!, { type: 'image/jpeg' });
+          const preview = m.url;
+          partnerMedia.push({ file: dummyFile, preview });
+          mediaList?.appendChild(createMediaElement(dummyFile, preview));
+        });
+      }
+      
+      modal?.classList.remove('hidden');
+      modal?.classList.add('flex');
+    });
+  });
+
+  // Gérer les boutons de suppression
+  document.querySelectorAll('.delete-partner-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-partner-id');
+      if (confirm('Êtes-vous sûr de vouloir supprimer ce partenaire ?')) {
+        alert('Partenaire supprimé avec succès (simulation)');
+      }
+    });
+  });
+</script>

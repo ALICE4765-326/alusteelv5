@@ -1,0 +1,102 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const articles = [
+  {
+    title: "Les tendances menuiserie 2025",
+    excerpt: "Découvrez les dernières innovations en matière de menuiserie aluminium et PVC.",
+    date: "15 Mars 2025",
+    category: "Tendances",
+    image: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?ixlib=rb-4.0.3"
+  },
+  {
+    title: "Comment choisir ses fenêtres ?",
+    excerpt: "Guide complet pour sélectionner les fenêtres adaptées à votre habitat.",
+    date: "10 Mars 2025",
+    category: "Guides",
+    image: "https://images.unsplash.com/photo-1600573472591-ee6c563aaec9?ixlib=rb-4.0.3"
+  },
+  {
+    title: "La sécurité avant tout",
+    excerpt: "Les solutions de serrurerie modernes pour protéger votre maison.",
+    date: "5 Mars 2025",
+    category: "Sécurité",
+    image: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?ixlib=rb-4.0.3"
+  }
+];
+---
+
+<Layout title="Blog" description="Actualités et conseils sur la menuiserie et la serrurerie">
+  <div class="pt-20">
+    <!-- Hero Section -->
+    <section class="relative py-20 bg-gradient-to-b from-gray-900 to-gray-800">
+      <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center">
+          <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
+            Actualités & Expertise
+          </h1>
+          <p class="text-xl text-gray-300">
+            Découvrez nos articles, conseils et actualités sur la menuiserie aluminium, PVC et la serrurerie.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Articles Section -->
+    <section class="py-20">
+      <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-3 gap-8">
+          {articles.map((article) => (
+            <article class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+              <div class="relative h-48">
+                <img 
+                  src={article.image} 
+                  alt={article.title}
+                  class="w-full h-full object-cover"
+                />
+                <div class="absolute top-4 left-4">
+                  <span class="bg-primary text-white px-4 py-1 rounded-full text-sm">
+                    {article.category}
+                  </span>
+                </div>
+              </div>
+              <div class="p-6">
+                <p class="text-gray-500 text-sm mb-2">{article.date}</p>
+                <h3 class="text-xl font-bold mb-2 hover:text-primary transition-colors">
+                  {article.title}
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  {article.excerpt}
+                </p>
+                <a href="#" class="text-primary font-semibold hover:text-secondary transition-colors inline-flex items-center">
+                  Lire la suite
+                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <!-- Newsletter -->
+        <div class="mt-20 max-w-2xl mx-auto bg-gray-50 rounded-2xl p-8 text-center">
+          <h2 class="text-2xl font-bold mb-4">Restez informé</h2>
+          <p class="text-gray-600 mb-6">
+            Inscrivez-vous à notre newsletter pour recevoir nos derniers articles et conseils.
+          </p>
+          <form class="flex gap-4 max-w-md mx-auto">
+            <input 
+              type="email" 
+              placeholder="Votre email" 
+              class="flex-1 rounded-full px-6 py-3 border focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50"
+            />
+            <button class="bg-primary hover:bg-secondary text-white px-8 py-3 rounded-full transition-colors duration-200">
+              S'inscrire
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>

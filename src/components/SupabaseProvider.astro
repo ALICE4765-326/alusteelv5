@@ -1,0 +1,25 @@
+---
+// This component provides Supabase context to the application
+---
+
+<script>
+  import { supabase } from '../lib/supabase';
+  
+  // Make supabase client available globally for client-side scripts
+  window.supabase = supabase;
+  
+  // Listen for auth state changes
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN') {
+      // Store session in localStorage for client-side checks
+      localStorage.setItem('alusteel_session', JSON.stringify({ user: session.user }));
+      
+      // Also set a cookie for initial page load checks
+      document.cookie = `alusteel_session=${JSON.stringify({ user: session.user })}; path=/; max-age=86400`;
+    } else if (event === 'SIGNED_OUT') {
+      // Clear localStorage and cookies
+      localStorage.removeItem('alusteel_session');
+      document.cookie = 'alusteel_session=; path=/; max-age=0';
+    }
+  });
+</script>

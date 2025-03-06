@@ -1,0 +1,97 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const partners = [
+  {
+    name: "ProPoseAlu",
+    description: "Spécialiste de la pose, ProPoseAlu assure une installation soignée et professionnelle de nos menuiseries et éléments de serrurerie, partout en France.",
+    icon: "M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+    image: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?ixlib=rb-4.0.3"
+  },
+  {
+    name: "Portails en Kits",
+    description: "Expert en kits de portails, portillons et accessoires d'entretien, Portails en Kits propose des solutions simples à monter, robustes et adaptées à tous les besoins.",
+    icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+    image: "https://images.unsplash.com/photo-1600573472591-ee6c563aaec9?ixlib=rb-4.0.3"
+  },
+  {
+    name: "Premium à Juste Prix",
+    description: "Portails, portillons, pergolas et carports : Premium à Juste Prix offre des produits haut de gamme à des tarifs accessibles, avec une commande en ligne et une livraison partout en France.",
+    icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3"
+  },
+  {
+    name: "VProBâtiment",
+    description: "VProBâtiment est le partenaire idéal pour vos projets de construction et de rénovation, alliant expertise et qualité d'exécution.",
+    icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
+    image: "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?ixlib=rb-4.0.3"
+  }
+];
+---
+
+<Layout title="Nos Partenaires" description="Découvrez nos partenaires de confiance">
+  <div class="pt-20">
+    <!-- Hero Section -->
+    <section class="relative py-20 bg-gradient-to-b from-gray-900 to-gray-800">
+      <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center">
+          <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
+            Des Experts à Nos Côtés
+          </h1>
+          <p class="text-xl text-gray-300">
+            Pour garantir des prestations complètes et de qualité, Alusteel s'entoure de partenaires fiables et reconnus dans leur domaine.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Partners Grid -->
+    <section class="py-20">
+      <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-2 gap-8">
+          {partners.map((partner) => (
+            <div class="group relative overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+              <div class="absolute inset-0">
+                <img 
+                  src={partner.image}
+                  alt={partner.name}
+                  class="w-full h-full object-cover opacity-10"
+                />
+              </div>
+              <div class="relative p-8">
+                <div class="flex items-center mb-6">
+                  <div class="p-3 bg-primary/10 rounded-lg mr-4">
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={partner.icon}/>
+                    </svg>
+                  </div>
+                  <h3 class="text-2xl font-bold">{partner.name}</h3>
+                </div>
+                <p class="text-gray-600 leading-relaxed mb-6">{partner.description}</p>
+                <a href="#" class="inline-flex items-center text-primary font-semibold hover:text-secondary transition-colors">
+                  En savoir plus
+                  <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <!-- CTA Section -->
+        <div class="mt-20 text-center">
+          <div class="max-w-2xl mx-auto bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-8">
+            <h2 class="text-3xl font-bold mb-4">Travaillons ensemble</h2>
+            <p class="text-gray-600 mb-8">
+              Avec nos partenaires, nous vous garantissons des solutions complètes, du choix du produit à son installation.
+            </p>
+            <a href="/contact" class="inline-block bg-primary hover:bg-secondary text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105">
+              Contactez-nous pour votre projet
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>

@@ -1,0 +1,276 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabase';
+
+// Verificar autenticação
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+// Buscar projetos do Supabase
+const { data: projects, error } = await supabase
+  .from('projects')
+  .select('*')
+  .order('created_at', { ascending: false });
+
+if (error) {
+  console.error('Erro ao buscar projetos:', error);
+}
+---
+
+<Layout title="Gestão de Projetos">
+  <div class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-6xl mx-auto">
+        <!-- Cabeçalho -->
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold">Gestão de Projetos</h1>
+            <p class="text-gray-600 mt-2">Gerencie seus projetos</p>
+          </div>
+          <div class="flex gap-4">
+            <a 
+              href="/admin"
+              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-primary hover:text-primary transition-colors"
+            >
+              Voltar
+            </a>
+            <button 
+              id="add-project-btn"
+              class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+            >
+              Adicionar Projeto
+            </button>
+          </div>
+        </div>
+
+        <!-- Lista de Projetos -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div class="p-6">
+            {projects && projects.length > 0 ? (
+              <div class="overflow-x-auto">
+                <table class="w-full">
+                  <thead>
+                    <tr class="border-b">
+                      <th class="text-left py-4 px-4">Nome</th>
+                      <th class="text-left py-4 px-4">Descrição</th>
+                      <th class="text-left py-4 px-4">Data de Criação</th>
+                      <th class="text-right py-4 px-4">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {projects.map((project) => (
+                      <tr class="border-b hover:bg-gray-50">
+                        <td class="py-4 px-4 font-medium">{project.name}</td>
+                        <td class="py-4 px-4 text-gray-600">{project.description || '-'}</td>
+                        <td class="py-4 px-4 text-gray-600">{new Date(project.created_at).toLocaleDateString('pt-PT')}</td>
+                        <td class="py-4 px-4">
+                          <div class="flex justify-end gap-2">
+                            <button 
+                              class="edit-project-btn p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              data-project-id={project.id}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button 
+                              class="delete-project-btn p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              data-project-id={project.id}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div class="text-center py-8">
+                <p class="text-gray-500">Nenhum projeto encontrado. Clique em "Adicionar Projeto" para criar um novo.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para adicionar/editar projeto -->
+  <div id="project-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+      <h2 id="modal-title" class="text-2xl font-bold mb-6">Adicionar Projeto</h2>
+      
+      <form id="project-form" class="space-y-6">
+        <input type="hidden" id="project-id" />
+        
+        <div>
+          <label for="project-name" class="block text-sm font-medium text-gray-700 mb-1">
+            Nome
+          </label>
+          <input
+            type="text"
+            id="project-name"
+            required
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        <div>
+          <label for="project-description" class="block text-sm font-medium text-gray-700 mb-1">
+            Descrição
+          </label>
+          <textarea
+            id="project-description"
+            rows="4"
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          ></textarea>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="button"
+            id="cancel-btn"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+          >
+            Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+  
+  // Elementos do DOM
+  const modal = document.getElementById('project-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const form = document.getElementById('project-form');
+  const projectId = document.getElementById('project-id') as HTMLInputElement;
+  const projectName = document.getElementById('project-name') as HTMLInputElement;
+  const projectDescription = document.getElementById('project-description') as HTMLTextAreaElement;
+  const addBtn = document.getElementById('add-project-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
+  const editBtns = document.querySelectorAll('.edit-project-btn');
+  const deleteBtns = document.querySelectorAll('.delete-project-btn');
+
+  // Abrir modal para adicionar projeto
+  addBtn?.addEventListener('click', () => {
+    modalTitle!.textContent = 'Adicionar Projeto';
+    projectId.value = '';
+    projectName.value = '';
+    projectDescription.value = '';
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
+  });
+
+  // Fechar modal
+  cancelBtn?.addEventListener('click', () => {
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
+  });
+
+  // Submeter formulário
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const isEditing = projectId.value !== '';
+    const projectData = {
+      name: projectName.value,
+      description: projectDescription.value
+    };
+    
+    try {
+      if (isEditing) {
+        // Atualizar projeto existente
+        await supabase
+          .from('projects')
+          .update(projectData)
+          .eq('id', projectId.value);
+      } else {
+        // Criar novo projeto
+        await supabase
+          .from('projects')
+          .insert(projectData);
+      }
+      
+      // Fechar modal e recarregar página
+      modal?.classList.add('hidden');
+      modal?.classList.remove('flex');
+      window.location.reload();
+    } catch (error) {
+      console.error('Erro ao salvar projeto:', error);
+      alert('Ocorreu um erro ao salvar o projeto. Por favor, tente novamente.');
+    }
+  });
+
+  // Editar projeto
+  editBtns.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-project-id');
+      if (!id) return;
+      
+      try {
+        // Buscar dados do projeto
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (error) throw error;
+        
+        // Preencher formulário
+        modalTitle!.textContent = 'Editar Projeto';
+        projectId.value = id;
+        projectName.value = data.name || '';
+        projectDescription.value = data.description || '';
+        
+        // Abrir modal
+        modal?.classList.remove('hidden');
+        modal?.classList.add('flex');
+      } catch (error) {
+        console.error('Erro ao buscar projeto:', error);
+        alert('Ocorreu um erro ao buscar os dados do projeto.');
+      }
+    });
+  });
+
+  // Excluir projeto
+  deleteBtns.forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-project-id');
+      if (!id) return;
+      
+      if (confirm('Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.')) {
+        try {
+          const { error } = await supabase
+            .from('projects')
+            .delete()
+            .eq('id', id);
+          
+          if (error) throw error;
+          
+          // Recarregar página
+          window.location.reload();
+        } catch (error) {
+          console.error('Erro ao excluir projeto:', error);
+          alert('Ocorreu um erro ao excluir o projeto.');
+        }
+      }
+    });
+  });
+</script>

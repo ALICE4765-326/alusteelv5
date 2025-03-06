@@ -1,0 +1,146 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { nosMetiersPage } from '../content/website-text';
+
+const { hero, menuiserie, serrurerie } = nosMetiersPage;
+---
+
+<Layout title="Nos Métiers" description="Découvrez nos services de menuiserie aluminium, PVC et serrurerie">
+  <div class="pt-20">
+    <!-- Hero Section -->
+    <section class="relative py-20 bg-gradient-to-b from-gray-900 to-gray-800">
+      <div class="container mx-auto px-4">
+        <div class="max-w-3xl mx-auto text-center">
+          <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
+            {hero.title}
+          </h1>
+          <p class="text-xl text-gray-300">
+            {hero.description}
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Menuiserie Section -->
+    <section class="py-20 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="text-3xl font-bold mb-12">{menuiserie.title}</h2>
+          
+          <div class="grid gap-12">
+            {menuiserie.sections.map((section) => (
+              <div class="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-start gap-6">
+                  <div class="p-4 bg-primary/10 rounded-xl">
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={section.icon}/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-2xl font-semibold mb-4">{section.title}</h3>
+                    <p class="text-gray-600">
+                      {section.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <!-- Galerie de photos menuiserie -->
+          <div class="mt-16">
+            <h3 class="text-2xl font-bold mb-6">{menuiserie.gallery.title}</h3>
+            <p class="text-gray-600 mb-8">{menuiserie.gallery.description}</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {menuiserie.gallery.images.map((image) => (
+                <div class="group relative overflow-hidden rounded-xl shadow-lg">
+                  <img 
+                    src={image.url} 
+                    alt={image.alt} 
+                    class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                    <div class="p-6 w-full">
+                      <h4 class="text-white text-xl font-semibold">{image.title}</h4>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="mt-12 text-center">
+            <p class="text-lg text-gray-600 mb-8">
+              {menuiserie.conclusion}
+            </p>
+            <a href="/contact" class="inline-block bg-primary hover:bg-secondary text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105">
+              {menuiserie.cta}
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Serrurerie Section -->
+    <section class="py-20 bg-gray-50">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="text-3xl font-bold mb-12">{serrurerie.title}</h2>
+
+          <div class="grid gap-12">
+            {serrurerie.sections.map((section) => (
+              <div class="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-all duration-300">
+                <div class="flex items-start gap-6">
+                  <div class="p-4 bg-primary/10 rounded-xl">
+                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d={section.icon}/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-2xl font-semibold mb-4">{section.title}</h3>
+                    <p class="text-gray-600">
+                      {section.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <!-- Galerie de photos serrurerie -->
+          <div class="mt-16">
+            <h3 class="text-2xl font-bold mb-6">{serrurerie.gallery.title}</h3>
+            <p class="text-gray-600 mb-8">{serrurerie.gallery.description}</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {serrurerie.gallery.images.map((image) => (
+                <div class="group relative overflow-hidden rounded-xl shadow-lg">
+                  <img 
+                    src={image.url} 
+                    alt={image.alt} 
+                    class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                    <div class="p-6 w-full">
+                      <h4 class="text-white text-xl font-semibold">{image.title}</h4>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="mt-12 text-center">
+            <p class="text-lg text-gray-600 mb-8">
+              {serrurerie.conclusion}
+            </p>
+            <a href="/contact" class="inline-block bg-primary hover:bg-secondary text-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105">
+              {serrurerie.cta}
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>

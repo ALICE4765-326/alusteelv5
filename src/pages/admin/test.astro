@@ -1,0 +1,127 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { supabase } from '../../lib/supabase';
+
+const testCredentials = {
+  email: 'admin@alusteel.pt',
+  password: 'Admin123!'
+};
+
+// Check if Supabase is configured
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && 
+  supabaseUrl !== 'your-project-url' && supabaseAnonKey !== 'your-anon-key';
+
+// Try to get Supabase URL and key from localStorage as fallback
+const localSupabaseUrl = typeof window !== 'undefined' ? localStorage.getItem('PUBLIC_SUPABASE_URL') : null;
+const localSupabaseKey = typeof window !== 'undefined' ? localStorage.getItem('PUBLIC_SUPABASE_ANON_KEY') : null;
+const isLocalSupabaseConfigured = localSupabaseUrl && localSupabaseKey;
+---
+
+<Layout title="Teste de Conexão Supabase">
+  <div class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-2xl mx-auto">
+        <div class="bg-white rounded-xl shadow-lg p-8">
+          <h1 class="text-2xl font-bold mb-6">Teste de Conexão Supabase</h1>
+          
+          <div class="space-y-4">
+            <div id="connection-status" class={isSupabaseConfigured || isLocalSupabaseConfigured ? "p-4 bg-green-50 text-green-800 rounded-lg" : "p-4 bg-red-50 text-red-800 rounded-lg"}>
+              <h2 class="font-semibold mb-2">{isSupabaseConfigured || isLocalSupabaseConfigured ? "✅ Supabase configurado" : "❌ Supabase não configurado"}</h2>
+              <p id="connection-message">{isSupabaseConfigured || isLocalSupabaseConfigured ? "As variáveis de ambiente do Supabase estão configuradas corretamente." : "As variáveis de ambiente do Supabase não estão configuradas corretamente. Por favor, atualize o arquivo .env com as suas credenciais do Supabase."}</p>
+              <p class="mt-2">
+                <strong>URL:</strong> {supabaseUrl || localSupabaseUrl || "Não configurado"}
+              </p>
+            </div>
+
+            <div class="p-4 bg-gray-50 rounded-lg">
+              <h2 class="font-semibold mb-2">Conta de administrador</h2>
+              <div class="space-y-2">
+                <p><span class="font-medium">Email:</span> {testCredentials.email}</p>
+                <p><span class="font-medium">Palavra-passe:</span> {testCredentials.password}</p>
+              </div>
+            </div>
+
+            <div class="p-4 bg-yellow-50 rounded-lg">
+              <h2 class="font-semibold text-yellow-800 mb-2">Instruções</h2>
+              <ol class="list-decimal list-inside space-y-2 text-yellow-800">
+                <li>Conecte-se à interface do Supabase</li>
+                <li>Vá para Authentication > Users</li>
+                <li>Clique em "New User"</li>
+                <li>Crie um utilizador com as credenciais acima</li>
+                <li>Uma vez criado, poderá iniciar sessão em /admin</li>
+              </ol>
+            </div>
+
+            <div class="p-4 bg-blue-50 rounded-lg">
+              <h2 class="font-semibold text-blue-800 mb-2">Informações do Projeto</h2>
+              <p class="mb-2 text-blue-800">Detalhes do projeto Supabase:</p>
+              <ul class="list-disc list-inside space-y-2 text-blue-800">
+                <li>ID do Projeto: xioagfysenbeufyuuuyw</li>
+                <li>URL: https://xioagfysenbeufyuuuyw.supabase.co</li>
+              </ul>
+            </div>
+
+            <div class="flex justify-center gap-4">
+              <a
+                href="/admin/login"
+                class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+              >
+                Ir para a página de login
+              </a>
+              <a
+                href="/admin"
+                class="px-6 py-2 border border-primary text-primary rounded-lg hover:bg-primary hover:text-white transition-colors"
+              >
+                Ir para a administração
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  // Test Supabase connection
+  async function testSupabaseConnection() {
+    try {
+      // Try to get Supabase URL and key from localStorage as fallback
+      const localSupabaseUrl = localStorage.getItem('PUBLIC_SUPABASE_URL');
+      const localSupabaseKey = localStorage.getItem('PUBLIC_SUPABASE_ANON_KEY');
+      
+      // If we have local Supabase credentials, update the client
+      if (localSupabaseUrl && localSupabaseKey) {
+        // We can't update the client directly, but we can show that we have credentials
+        document.getElementById('connection-status')?.classList.add('bg-green-50', 'text-green-800');
+        document.getElementById('connection-status')?.classList.remove('bg-red-50', 'text-red-800');
+        document.getElementById('connection-message')?.textContent = 'Credenciais do Supabase encontradas no localStorage.';
+        return;
+      }
+      
+      // Try to connect to Supabase
+      const { data, error } = await supabase.from('settings').select('id').limit(1);
+      
+      if (error) {
+        console.error('Erro ao conectar ao Supabase:', error);
+        document.getElementById('connection-status')?.classList.add('bg-red-50', 'text-red-800');
+        document.getElementById('connection-status')?.classList.remove('bg-green-50', 'text-green-800');
+        document.getElementById('connection-message')?.textContent = 'Não foi possível conectar ao Supabase. Verifique as suas credenciais.';
+      } else {
+        console.log('Conexão ao Supabase bem-sucedida!');
+        document.getElementById('connection-status')?.classList.add('bg-green-50', 'text-green-800');
+        document.getElementById('connection-status')?.classList.remove('bg-red-50', 'text-red-800');
+        document.getElementById('connection-message')?.textContent = 'Conexão ao Supabase bem-sucedida!';
+      }
+    } catch (error) {
+      console.error('Erro ao testar a conexão:', error);
+    }
+  }
+
+  // Run the test on page load
+  testSupabaseConnection();
+</script>

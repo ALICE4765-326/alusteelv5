@@ -1,0 +1,664 @@
+---
+import Layout from '../../layouts/AdminLayout.astro';
+import { contentManagement, authManagement } from '../../lib/supabaseAdmin';
+
+// Check if user is admin
+const isAdmin = await authManagement.isAdmin();
+if (!isAdmin) {
+  return Astro.redirect('/admin/login');
+}
+
+// Media folders
+const folders = [
+  { id: 'projects', name: 'Projetos' },
+  { id: 'blog', name: 'Blog' },
+  { id: 'testimonials', name: 'Testemunhos' },
+  { id: 'partners', name: 'Parceiros' },
+  { id: 'general', name: 'Geral' }
+];
+
+// Get media for the first folder by default
+let activeFolder = 'general';
+let mediaItems = [];
+
+try {
+  mediaItems = await contentManagement.listMedia(activeFolder);
+} catch (error) {
+  console.error('Error fetching media:', error);
+}
+---
+
+<Layout title="Gestão de Media">
+  <div class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+          <div>
+            <h1 class="text-3xl font-bold">Gestão de Media</h1>
+            <p class="text-gray-600 mt-2">Gerencie imagens e vídeos do site</p>
+          </div>
+          <div class="flex gap-4">
+            <a 
+              href="/admin"
+              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-primary hover:text-primary transition-colors"
+            >
+              Voltar
+            </a>
+            <button 
+              id="upload-media-btn"
+              class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+            >
+              Carregar Media
+            </button>
+          </div>
+        </div>
+
+        <!-- Media Management Interface -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- Folders Sidebar -->
+          <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4">Pastas</h2>
+            <nav class="space-y-2">
+              {folders.map((folder) => (
+                <button 
+                  class={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                    folder.id === activeFolder 
+                      ? 'bg-primary text-white' 
+                      : 'hover:bg-gray-100'
+                  }`}
+                  data-folder={folder.id}
+                >
+                  {folder.name}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          <!-- Media Grid -->
+          <div class="md:col-span-3 bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6">
+              <h2 id="folder-title" class="text-2xl font-bold mb-6">Geral</h2>
+              
+              <div id="media-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {mediaItems.length > 0 ? (
+                  mediaItems.map((item) => (
+                    <div class="relative group overflow-hidden rounded-lg shadow-md" data-media-name={item.name}>
+                      {item.metadata?.mimetype?.startsWith('image/') ? (
+                        <img 
+                          src={`${import.meta.env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${activeFolder}/${item.name}`}
+                          alt={item.name}
+                          class="w-full h-40 object-cover"
+                        />
+                      ) : item.metadata?.mimetype?.startsWith('video/') ? (
+                        <video 
+                          src={`${import.meta.env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${activeFolder}/${item.name}`}
+                          class="w-full h-40 object-cover"
+                          muted
+                        />
+                      ) : (
+                        <div class="w-full h-40 bg-gray-200 flex items-center justify-center">
+                          <span class="text-gray-500">{item.name}</span>
+                        </div>
+                      )}
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                          <p class="text-white text-sm truncate">{item.name}</p>
+                        </div>
+                        <div class="absolute top-2 right-2 flex gap-2">
+                          <button class="copy-url-btn p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                          </button>
+                          <button class="delete-media-btn p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div class="col-span-full text-center py-8">
+                    <p class="text-gray-500">Nenhum arquivo encontrado nesta pasta. Clique em "Carregar Media" para adicionar.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para upload de media -->
+  <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full mx-4">
+      <h2 class="text-2xl font-bold mb-6">Carregar Media</h2>
+      
+      <form id="upload-form" class="space-y-6">
+        <div>
+          <label for="upload-folder" class="block text-sm font-medium text-gray-700 mb-1">
+            Pasta
+          </label>
+          <select
+            id="upload-folder"
+            required
+            class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-primary focus:border-primary"
+          >
+            {folders.map((folder) => (
+              <option value={folder.id} selected={folder.id === activeFolder}>{folder.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Arquivos
+          </label>
+          <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+            <div class="space-y-1 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <div class="flex text-sm text-gray-600">
+                <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-secondary">
+                  <span>Carregar arquivos</span>
+                  <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple accept="image/jpeg,image/png,image/gif,video/mp4,video/webm" />
+                </label>
+                <p class="pl-1">ou arraste e solte</p>
+              </div>
+              <p class="text-xs text-gray-500">
+                PNG, JPG, GIF até 2MB, MP4, WEBM até 10MB
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="file-preview" class="hidden space-y-4">
+          <h3 class="font-medium">Arquivos selecionados:</h3>
+          <div id="file-list" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Files will be added here -->
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="button"
+            id="cancel-upload-btn"
+            class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            id="submit-upload-btn"
+            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
+          >
+            Carregar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de confirmação para exclusão -->
+  <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-8 max-w-md w-full mx-4">
+      <h2 class="text-2xl font-bold mb-4">Confirmar Exclusão</h2>
+      <p class="mb-6">Tem certeza que deseja excluir este arquivo? Esta ação não pode ser desfeita.</p>
+      
+      <div class="flex justify-end gap-4">
+        <button
+          id="cancel-delete-btn"
+          class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          id="confirm-delete-btn"
+          class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        >
+          Excluir
+        </button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { contentManagement } from '../../lib/supabaseAdmin';
+  
+  // Elements
+  const folderButtons = document.querySelectorAll('[data-folder]');
+  const folderTitle = document.getElementById('folder-title');
+  const mediaGrid = document.getElementById('media-grid');
+  const uploadMediaBtn = document.getElementById('upload-media-btn');
+  
+  // Upload modal elements
+  const uploadModal = document.getElementById('upload-modal');
+  const uploadForm = document.getElementById('upload-form');
+  const uploadFolder = document.getElementById('upload-folder');
+  const fileUpload = document.getElementById('file-upload');
+  const filePreview = document.getElementById('file-preview');
+  const fileList = document.getElementById('file-list');
+  const cancelUploadBtn = document.getElementById('cancel-upload-btn');
+  const submitUploadBtn = document.getElementById('submit-upload-btn');
+  
+  // Confirmation modal elements
+  const confirmModal = document.getElementById('confirm-modal');
+  const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  
+  let activeFolder = 'general';
+  let mediaToDelete = null;
+  let selectedFiles = [];
+  
+  // Load media for a folder
+  async function loadMedia(folder) {
+    try {
+      activeFolder = folder;
+      
+      // Update folder title
+      const folderButton = document.querySelector(`[data-folder="${folder}"]`);
+      if (folderTitle && folderButton) {
+        folderTitle.textContent = folderButton.textContent.trim();
+      }
+      
+      // Update active button
+      folderButtons.forEach(btn => {
+        if (btn.getAttribute('data-folder') === folder) {
+          btn.classList.add('bg-primary', 'text-white');
+          btn.classList.remove('hover:bg-gray-100');
+        } else {
+          btn.classList.remove('bg-primary', 'text-white');
+          btn.classList.add('hover:bg-gray-100');
+        }
+      });
+      
+      // Fetch media
+      const media = await contentManagement.listMedia(folder);
+      
+      // Render media
+      if (mediaGrid) {
+        if (media.length > 0) {
+          mediaGrid.innerHTML = media.map(item => {
+            const mediaUrl = `${import.meta.env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${folder}/${item.name}`;
+            const isImage = item.metadata?.mimetype?.startsWith('image/');
+            const isVideo = item.metadata?.mimetype?.startsWith('video/');
+            
+            let mediaElement;
+            if (isImage) {
+              mediaElement = `<img src="${mediaUrl}" alt="${item.name}" class="w-full h-40 object-cover" />`;
+            } else if (isVideo) {
+              mediaElement = `<video src="${mediaUrl}" class="w-full h-40 object-cover" muted></video>`;
+            } else {
+              mediaElement = `<div class="w-full h-40 bg-gray-200 flex items-center justify-center">
+                <span class="text-gray-500">${item.name}</span>
+              </div>`;
+            }
+            
+            return `
+              <div class="relative group overflow-hidden rounded-lg shadow-md" data-media-name="${item.name}">
+                ${mediaElement}
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div class="absolute bottom-0 left-0 right-0 p-4">
+                    <p class="text-white text-sm truncate">${item.name}</p>
+                  </div>
+                  <div class="absolute top-2 right-2 flex gap-2">
+                    <button class="copy-url-btn p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                    <button class="delete-media-btn p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          mediaGrid.innerHTML = `
+            <div class="col-span-full text-center py-8">
+              <p class="text-gray-500">Nenhum arquivo encontrado nesta pasta. Clique em "Carregar Media" para adicionar.</p>
+            </div>
+          `;
+        }
+        
+        // Add event listeners to copy and delete buttons
+        document.querySelectorAll('.copy-url-btn').forEach(btn => {
+          btn.addEventListener('click', handleCopyUrl);
+        });
+        
+        document.querySelectorAll('.delete-media-btn').forEach(btn => {
+          btn.addEventListener('click', handleDeleteMedia);
+        });
+        
+        // Initialize videos
+        document.querySelectorAll('video').forEach(video => {
+          video.addEventListener('mouseenter', () => {
+            video.play();
+          });
+          
+          video.addEventListener('mouseleave', () => {
+            video.pause();
+            video.currentTime = 0;
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Error loading media:', error);
+      alert('Erro ao carregar media. Por favor, tente novamente.');
+    }
+  }
+  
+  // Handle folder button clicks
+  folderButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const folder = btn.getAttribute('data-folder');
+      if (folder) {
+        loadMedia(folder);
+      }
+    });
+  });
+  
+  // Handle upload media button
+  uploadMediaBtn?.addEventListener('click', () => {
+    // Reset form
+    uploadForm?.reset();
+    uploadFolder.value = activeFolder;
+    selectedFiles = [];
+    
+    if (filePreview) filePreview.classList.add('hidden');
+    if (fileList) fileList.innerHTML = '';
+    
+    // Show modal
+    uploadModal?.classList.remove('hidden');
+    uploadModal?.classList.add('flex');
+  });
+  
+  // Handle file selection
+  fileUpload?.addEventListener('change', (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    selectedFiles = Array.from(files);
+    
+    // Show file preview
+    if (filePreview) filePreview.classList.remove('hidden');
+    
+    // Render file list
+    if (fileList) {
+      fileList.innerHTML = selectedFiles.map((file, index) => {
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+        const maxSize = isVideo ? 10 * 1024 * 1024 : 2 * 1024 * 1024;
+        const isValidSize = file.size <= maxSize;
+        
+        let preview;
+        if (isImage) {
+          preview = URL.createObjectURL(file);
+        } else if (isVideo) {
+          preview = URL.createObjectURL(file);
+        }
+        
+        return `
+          <div class="relative group">
+            ${isImage ? `
+              <img src="${preview}" alt="${file.name}" class="w-full h-32 object-cover rounded-lg" />
+            ` : isVideo ? `
+              <video src="${preview}" class="w-full h-32 object-cover rounded-lg" muted></video>
+            ` : `
+              <div class="w-full h-32 bg-gray-200 flex items-center justify-center rounded-lg">
+                <span class="text-gray-500">${file.name}</span>
+              </div>
+            `}
+            <div class="mt-1 flex justify-between items-center">
+              <span class="text-xs truncate">${file.name}</span>
+              <span class="text-xs ${isValidSize ? 'text-green-600' : 'text-red-600'}">
+                ${(file.size / (1024 * 1024)).toFixed(2)} MB
+              </span>
+            </div>
+            <button 
+              type="button"
+              class="remove-file-btn absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              data-index="${index}"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+      
+      // Add event listeners to remove buttons
+      document.querySelectorAll('.remove-file-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt(e.currentTarget.getAttribute('data-index'));
+          selectedFiles.splice(index, 1);
+          
+          if (selectedFiles.length === 0) {
+            filePreview.classList.add('hidden');
+          } else {
+            // Re-render file list
+            e.currentTarget.closest('.group').remove();
+          }
+        });
+      });
+      
+      // Initialize videos
+      document.querySelectorAll('video').forEach(video => {
+        video.addEventListener('mouseenter', () => {
+          video.play();
+        });
+        
+        video.addEventListener('mouseleave', () => {
+          video.pause();
+          video.currentTime = 0;
+        });
+      });
+    }
+  });
+  
+  // Handle drag and drop
+  const dropZone = document.querySelector('.border-dashed');
+  if (dropZone) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+      dropZone.classList.add('border-primary', 'bg-primary/5');
+    }
+    
+    function unhighlight() {
+      dropZone.classList.remove('border-primary', 'bg-primary/5');
+    }
+    
+    dropZone.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      
+      if (fileUpload) {
+        fileUpload.files = files;
+        fileUpload.dispatchEvent(new Event('change'));
+      }
+    }
+  }
+  
+  // Handle form submission
+  uploadForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (selectedFiles.length === 0) {
+      alert('Por favor, selecione pelo menos um arquivo para carregar.');
+      return;
+    }
+    
+    const folder = uploadFolder.value;
+    
+    try {
+      // Disable submit button
+      if (submitUploadBtn) {
+        submitUploadBtn.disabled = true;
+        submitUploadBtn.textContent = 'Carregando...';
+      }
+      
+      // Upload each file
+      for (const file of selectedFiles) {
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+        const maxSize = isVideo ? 10 * 1024 * 1024 : 2 * 1024 * 1024;
+        
+        // Validate file type and size
+        if (!isImage && !isVideo) {
+          alert(`Tipo de arquivo não suportado: ${file.name}`);
+          continue;
+        }
+        
+        if (file.size > maxSize) {
+          alert(`Arquivo muito grande: ${file.name} (máximo: ${maxSize / (1024 * 1024)}MB)`);
+          continue;
+        }
+        
+        // Upload file
+        await contentManagement.uploadMedia(file, folder);
+        
+        // Log activity
+        await contentManagement.logActivity('upload_media', {
+          folder,
+          filename: file.name,
+          type: isImage ? 'image' : 'video'
+        });
+      }
+      
+      // Close modal
+      uploadModal?.classList.add('hidden');
+      uploadModal?.classList.remove('flex');
+      
+      // Reload media
+      await loadMedia(folder);
+      
+      // Reset form
+      uploadForm.reset();
+      selectedFiles = [];
+      
+      // Re-enable submit button
+      if (submitUploadBtn) {
+        submitUploadBtn.disabled = false;
+        submitUploadBtn.textContent = 'Carregar';
+      }
+    } catch (error) {
+      console.error('Error uploading media:', error);
+      alert('Erro ao carregar media. Por favor, tente novamente.');
+      
+      // Re-enable submit button
+      if (submitUploadBtn) {
+        submitUploadBtn.disabled = false;
+        submitUploadBtn.textContent = 'Carregar';
+      }
+    }
+  });
+  
+  // Handle cancel upload button
+  cancelUploadBtn?.addEventListener('click', () => {
+    uploadModal?.classList.add('hidden');
+    uploadModal?.classList.remove('flex');
+  });
+  
+  // Handle copy URL button
+  function handleCopyUrl(e) {
+    const mediaElement = e.currentTarget.closest('[data-media-name]');
+    const mediaName = mediaElement.getAttribute('data-media-name');
+    const mediaUrl = `${import.meta.env.PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${activeFolder}/${mediaName}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(mediaUrl).then(() => {
+      // Show success message
+      const originalHTML = e.currentTarget.innerHTML;
+      e.currentTarget.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      `;
+      
+      setTimeout(() => {
+        e.currentTarget.innerHTML = originalHTML;
+      }, 2000);
+    }).catch(err => {
+      console.error('Error copying URL:', err);
+      alert('Erro ao copiar URL. Por favor, tente novamente.');
+    });
+  }
+  
+  // Handle delete media button
+  function handleDeleteMedia(e) {
+    const mediaElement = e.currentTarget.closest('[data-media-name]');
+    const mediaName = mediaElement.getAttribute('data-media-name');
+    mediaToDelete = `${activeFolder}/${mediaName}`;
+    
+    // Show confirmation modal
+    confirmModal?.classList.remove('hidden');
+    confirmModal?.classList.add('flex');
+  }
+  
+  // Handle cancel delete button
+  cancelDeleteBtn?.addEventListener('click', () => {
+    confirmModal?.classList.add('hidden');
+    confirmModal?.classList.remove('flex');
+    mediaToDelete = null;
+  });
+  
+  // Handle confirm delete button
+  confirmDeleteBtn?.addEventListener('click', async () => {
+    if (!mediaToDelete) return;
+    
+    try {
+      await contentManagement.deleteMedia(mediaToDelete);
+      
+      // Log activity
+      await contentManagement.logActivity('delete_media', {
+        path: mediaToDelete
+      });
+      
+      // Close modal
+      confirmModal?.classList.add('hidden');
+      confirmModal?.classList.remove('flex');
+      
+      // Reload media
+      await loadMedia(activeFolder);
+      
+      mediaToDelete = null;
+    } catch (error) {
+      console.error('Error deleting media:', error);
+      alert('Erro ao excluir media. Por favor, tente novamente.');
+    }
+  });
+  
+  // Load initial media
+  document.addEventListener('DOMContentLoaded', () => {
+    loadMedia(activeFolder);
+  });
+</script>
