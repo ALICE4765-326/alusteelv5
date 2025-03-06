@@ -2,8 +2,8 @@
 // This component provides Supabase context to the application
 ---
 
-<script>
-  import { supabase } from '../lib/supabase';
+<script client:only>
+  import { supabase } from '/src/supabase.ts'; // Corrigé : chemin absolu vers src/supabase.ts
   
   // Make supabase client available globally for client-side scripts
   window.supabase = supabase;

@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { admin } from '../../content/website-text';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '/src/supabase.ts'; // Corrigé : chemin absolu vers src/supabase.ts
 
 // Check authentication on page load
 const { data: { session } } = await supabase.auth.getSession();
@@ -146,7 +146,7 @@ const contacts = settings?.contacts || {
 </Layout>
 
 <script>
-  import { supabase } from '../../lib/supabase';
+  import { supabase } from '/src/supabase.ts'; // Corrigé : chemin absolu vers src/supabase.ts
 
   // Client-side authentication check
   async function checkAuth() {

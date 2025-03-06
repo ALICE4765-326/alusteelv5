@@ -1,10 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../supabase'; // Corrigé pour pointer vers src/supabase.ts
 
 const testCredentials = {
   email: 'admin@alusteel.pt',
-  password: 'Admin123!'
+  password: 'Alusteelpt33290'
 };
 
 // Check if Supabase is configured
@@ -13,10 +13,10 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && 
   supabaseUrl !== 'your-project-url' && supabaseAnonKey !== 'your-anon-key';
 
-// Try to get Supabase URL and key from localStorage as fallback
-const localSupabaseUrl = typeof window !== 'undefined' ? localStorage.getItem('PUBLIC_SUPABASE_URL') : null;
-const localSupabaseKey = typeof window !== 'undefined' ? localStorage.getItem('PUBLIC_SUPABASE_ANON_KEY') : null;
-const isLocalSupabaseConfigured = localSupabaseUrl && localSupabaseKey;
+// Try to get Supabase URL and key from localStorage as fallback (server-side check disabled here)
+const localSupabaseUrl = null; // Désactivé côté serveur, sera géré côté client
+const localSupabaseKey = null; // Désactivé côté serveur, sera géré côté client
+const isLocalSupabaseConfigured = false; // Désactivé côté serveur
 ---
 
 <Layout title="Teste de Conexão Supabase">
@@ -27,11 +27,11 @@ const isLocalSupabaseConfigured = localSupabaseUrl && localSupabaseKey;
           <h1 class="text-2xl font-bold mb-6">Teste de Conexão Supabase</h1>
           
           <div class="space-y-4">
-            <div id="connection-status" class={isSupabaseConfigured || isLocalSupabaseConfigured ? "p-4 bg-green-50 text-green-800 rounded-lg" : "p-4 bg-red-50 text-red-800 rounded-lg"}>
-              <h2 class="font-semibold mb-2">{isSupabaseConfigured || isLocalSupabaseConfigured ? "✅ Supabase configurado" : "❌ Supabase não configurado"}</h2>
-              <p id="connection-message">{isSupabaseConfigured || isLocalSupabaseConfigured ? "As variáveis de ambiente do Supabase estão configuradas corretamente." : "As variáveis de ambiente do Supabase não estão configuradas corretamente. Por favor, atualize o arquivo .env com as suas credenciais do Supabase."}</p>
+            <div id="connection-status" class={isSupabaseConfigured ? "p-4 bg-green-50 text-green-800 rounded-lg" : "p-4 bg-red-50 text-red-800 rounded-lg"}>
+              <h2 class="font-semibold mb-2">{isSupabaseConfigured ? "✅ Supabase configurado" : "❌ Supabase não configurado"}</h2>
+              <p id="connection-message">{isSupabaseConfigured ? "As variáveis de ambiente do Supabase estão configuradas corretamente." : "As variáveis de ambiente do Supabase não estão configuradas corretamente. Por favor, atualize o arquivo .env com as suas credenciais do Supabase."}</p>
               <p class="mt-2">
-                <strong>URL:</strong> {supabaseUrl || localSupabaseUrl || "Não configurado"}
+                <strong>URL:</strong> {supabaseUrl || "Não configurado"}
               </p>
             </div>
 
@@ -58,8 +58,8 @@ const isLocalSupabaseConfigured = localSupabaseUrl && localSupabaseKey;
               <h2 class="font-semibold text-blue-800 mb-2">Informações do Projeto</h2>
               <p class="mb-2 text-blue-800">Detalhes do projeto Supabase:</p>
               <ul class="list-disc list-inside space-y-2 text-blue-800">
-                <li>ID do Projeto: xioagfysenbeufyuuuyw</li>
-                <li>URL: https://xioagfysenbeufyuuuyw.supabase.co</li>
+                <li>ID do Projeto: dqfkrszinsfiyljtjcqt</li>
+                <li>URL: https://dqfkrszinsfiyljtjcqt.supabase.co</li>
               </ul>
             </div>
 
@@ -82,10 +82,11 @@ const isLocalSupabaseConfigured = localSupabaseUrl && localSupabaseKey;
       </div>
     </div>
   </div>
+</div>
 </Layout>
 
-<script>
-  import { supabase } from '../../lib/supabase';
+<script client:only>
+  import { supabase } from '../supabase'; // Corrigé pour pointer vers src/supabase.ts
 
   // Test Supabase connection
   async function testSupabaseConnection() {

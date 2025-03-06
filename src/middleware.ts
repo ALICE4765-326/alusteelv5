@@ -1,2 +1,6 @@
-// This file is intentionally empty as we're not using server-side middleware
-// with static output mode
+import { defineMiddleware } from 'astro:middleware';
+
+export const onRequest = defineMiddleware((context, next) => {
+  console.log('Requête interceptée'); // Optionnel, pour tester
+  return next();
+});

@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase } from '/src/supabase.ts'; // Corrigé : chemin absolu vers src/supabase.ts
 
 // Authentication functions
 export const auth = {

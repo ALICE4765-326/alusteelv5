@@ -24,7 +24,7 @@ if (!isAuthenticated) {
 // Simulation de données locales
 const projects = [
   {
-    id: 1,
+    id: 1,  // Corrigé : supprimé ",gf"
     title: "Menuiserie aluminium",
     category: "Fenêtres",
     description: "Installation de fenêtres en aluminium pour une villa moderne",
@@ -378,7 +378,7 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
   </div>
 </Layout>
 
-<script>
+<script client:only>
   // Client-side authentication check
   function checkAuth() {
     const session = localStorage.getItem('alusteel_session');
@@ -436,33 +436,33 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
   const form = document.getElementById('project-form');
   const addBtn = document.getElementById('add-project-btn');
   const cancelBtn = document.getElementById('cancel-btn');
-  const projectId = document.getElementById('project-id') as HTMLInputElement;
-  const projectTitle = document.getElementById('project-title') as HTMLInputElement;
-  const projectCategory = document.getElementById('project-category') as HTMLSelectElement;
-  const projectDescription = document.getElementById('project-description') as HTMLTextAreaElement;
+  const projectId = document.getElementById('project-id');
+  const projectTitle = document.getElementById('project-title');
+  const projectCategory = document.getElementById('project-category');
+  const projectDescription = document.getElementById('project-description');
   const mediaList = document.getElementById('media-list');
   const addImageBtn = document.getElementById('add-image-btn');
   const addVideoBtn = document.getElementById('add-video-btn');
-  const mediaInput = document.getElementById('media-input') as HTMLInputElement;
+  const mediaInput = document.getElementById('media-input');
   
   // Document modal elements
   const documentModal = document.getElementById('document-modal');
   const documentForm = document.getElementById('document-form');
-  const documentIndex = document.getElementById('document-index') as HTMLInputElement;
-  const documentName = document.getElementById('document-name') as HTMLInputElement;
-  const documentDescription = document.getElementById('document-description') as HTMLTextAreaElement;
+  const documentIndex = document.getElementById('document-index');
+  const documentName = document.getElementById('document-name');
+  const documentDescription = document.getElementById('document-description');
   const documentFilename = document.getElementById('document-filename');
   const documentBrowseBtn = document.getElementById('document-browse-btn');
   const documentCancelBtn = document.getElementById('document-cancel-btn');
-  const documentInput = document.getElementById('document-input') as HTMLInputElement;
+  const documentInput = document.getElementById('document-input');
   const documentsList = document.getElementById('documents-list');
   const addDocumentBtn = document.getElementById('add-document-btn');
   
-  let projectMedia: { type: string; file: File; preview: string }[] = [];
-  let projectDocuments: { name: string; description: string; file: File; url?: string }[] = [];
+  let projectMedia = [];
+  let projectDocuments = [];
 
   // Fonction pour créer un élément média
-  function createMediaElement(type: string, file: File, preview: string) {
+  function createMediaElement(type, file, preview) {
     const div = document.createElement('div');
     div.className = 'relative group';
     
@@ -503,7 +503,7 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
   }
 
   // Fonction pour créer un élément document
-  function createDocumentElement(document: { name: string; description: string; file?: File; url?: string }, index: number) {
+  function createDocumentElement(document, index) {
     const div = document.createElement('div');
     div.className = 'p-4 border border-gray-200 rounded-lg';
     
@@ -538,12 +538,12 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
 
     // Ajouter les gestionnaires d'événements
     div.querySelector('.edit-document-btn')?.addEventListener('click', (e) => {
-      const index = parseInt((e.currentTarget as HTMLElement).dataset.index || '0');
+      const index = parseInt(e.currentTarget.dataset.index || '0');
       openDocumentModal(index);
     });
 
     div.querySelector('.delete-document-btn')?.addEventListener('click', (e) => {
-      const index = parseInt((e.currentTarget as HTMLElement).dataset.index || '0');
+      const index = parseInt(e.currentTarget.dataset.index || '0');
       if (confirm('Êtes-vous sûr de vouloir supprimer ce document ?')) {
         projectDocuments.splice(index, 1);
         renderDocumentsList();
@@ -577,14 +577,14 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
       if (documentFilename) {
         documentFilename.textContent = doc.file ? doc.file.name : (doc.url ? doc.url.split('/').pop() : 'Fichier existant');
       }
-      documentForm?.querySelector('button[type="submit"]')?.textContent = 'Mettre à jour';
+      documentForm?.querySelector('button[type="submit"]').textContent = 'Mettre à jour';
     } else {
       // Mode ajout
       documentForm?.reset();
       if (documentFilename) {
         documentFilename.textContent = 'Aucun fichier sélectionné';
       }
-      documentForm?.querySelector('button[type="submit"]')?.textContent = 'Ajouter';
+      documentForm?.querySelector('button[type="submit"]').textContent = 'Ajouter';
     }
     
     documentModal.classList.remove('hidden');
@@ -615,7 +615,7 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
 
   // Gérer la sélection des fichiers média
   mediaInput?.addEventListener('change', (e) => {
-    const files = (e.target as HTMLInputElement).files;
+    const files = e.target.files;
     if (!files) return;
 
     Array.from(files).forEach(file => {
@@ -649,7 +649,7 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
 
   // Gérer la sélection des fichiers PDF
   documentInput?.addEventListener('change', (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     // Vérifier la taille (10 Mo max)
@@ -673,27 +673,27 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
 
   // Ouvrir le modal pour ajouter un projet
   addBtn?.addEventListener('click', () => {
-    modalTitle!.textContent = 'Ajouter un chantier';
+    modalTitle.textContent = 'Ajouter un chantier';
     form?.reset();
     projectId.value = '';
     projectMedia = [];
     projectDocuments = [];
     if (mediaList) mediaList.innerHTML = '';
     if (documentsList) documentsList.innerHTML = '';
-    modal?.classList.remove('hidden');
-    modal?.classList.add('flex');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
   });
 
   // Fermer le modal de projet
   cancelBtn?.addEventListener('click', () => {
-    modal?.classList.add('hidden');
-    modal?.classList.remove('flex');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
   });
 
   // Fermer le modal de document
   documentCancelBtn?.addEventListener('click', () => {
-    documentModal?.classList.add('hidden');
-    documentModal?.classList.remove('flex');
+    documentModal.classList.add('hidden');
+    documentModal.classList.remove('flex');
   });
 
   // Gérer la soumission du formulaire de document
@@ -728,8 +728,8 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
     }
     
     renderDocumentsList();
-    documentModal?.classList.add('hidden');
-    documentModal?.classList.remove('flex');
+    documentModal.classList.add('hidden');
+    documentModal.classList.remove('flex');
     documentInput.value = '';
   });
 
@@ -751,20 +751,20 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
     })));
     
     alert(`Chantier ${isEditing ? 'modifié' : 'ajouté'} avec succès (simulation)`);
-    modal?.classList.add('hidden');
-    modal?.classList.remove('flex');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
   });
 
   // Gérer les boutons d'édition
   document.querySelectorAll('.edit-project-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = btn.getAttribute('data-project-id');
-      modalTitle!.textContent = 'Modifier le chantier';
+      modalTitle.textContent = 'Modifier le chantier';
       
       // Trouver le projet correspondant
       const project = projects.find(p => p.id.toString() === id);
       if (project) {
-        projectId.value = id!;
+        projectId.value = id;
         projectTitle.value = project.title;
         projectCategory.value = project.category;
         projectDescription.value = project.description;
@@ -774,8 +774,7 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
         if (mediaList) mediaList.innerHTML = '';
         
         project.media.forEach(m => {
-          // Dans une vraie application, nous chargerions les vrais fichiers
-          const dummyFile = new File([""], m.url.split('/').pop()!, { type: `${m.type}/${m.type === 'video' ? 'mp4' : 'jpeg'}` });
+          const dummyFile = new File([""], m.url.split('/').pop(), { type: `${m.type}/${m.type === 'video' ? 'mp4' : 'jpeg'}` });
           const preview = m.url;
           projectMedia.push({ type: m.type, file: dummyFile, preview });
           mediaList?.appendChild(createMediaElement(m.type, dummyFile, preview));
@@ -788,14 +787,14 @@ const categories = ["Fenêtres", "Portes", "Vérandas", "Serrurerie"];
             name: d.name,
             description: d.description,
             url: d.url,
-            file: new File([""], d.url.split('/').pop()!, { type: 'application/pdf' })
+            file: new File([""], d.url.split('/').pop(), { type: 'application/pdf' })
           });
         });
         renderDocumentsList();
       }
       
-      modal?.classList.remove('hidden');
-      modal?.classList.add('flex');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
     });
   });
 

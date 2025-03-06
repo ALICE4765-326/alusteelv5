@@ -2,7 +2,7 @@
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../supabase'; // Corrigé : pointe vers src/supabase.ts
 import ConnectSupabaseButton from '../components/ConnectSupabaseButton.astro';
 
 interface Props {
